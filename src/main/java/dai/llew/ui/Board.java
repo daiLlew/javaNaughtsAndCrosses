@@ -1,5 +1,7 @@
 package dai.llew.ui;
 
+import dai.llew.game.Player.PlayerType;
+
 import javax.swing.*;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -16,25 +18,37 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-import static dai.llew.ui.CellPosition.*;
+import static dai.llew.ui.CellPosition.BOTTOM_LEFT;
+import static dai.llew.ui.CellPosition.BOTTOM_MID;
+import static dai.llew.ui.CellPosition.BOTTOM_RIGHT;
+import static dai.llew.ui.CellPosition.MID_LEFT;
+import static dai.llew.ui.CellPosition.MID_MID;
+import static dai.llew.ui.CellPosition.MID_RIGHT;
+import static dai.llew.ui.CellPosition.TOP_LEFT;
+import static dai.llew.ui.CellPosition.TOP_MID;
+import static dai.llew.ui.CellPosition.TOP_RIGHT;
 
 /**
  * Created by daiLlew on 17/01/2016.
  */
 public class Board extends JPanel {
 
-	private static final int MARGIN = 10;
-
 	private Dimension dimension;
 	private Rectangle2D background;
+	private Consumer<CellPosition> updatePlayer;
+	private Supplier<PlayerType> currentPlayer;
 
 	private Map<CellPosition, BoardCell> cells;
 
-	public Board(Dimension dimension) {
+	public Board(Dimension dimension, Supplier<PlayerType> currentPlayer, Consumer<CellPosition> updatePlayer) {
 		super();
 		setSize(dimension);
 		this.dimension = dimension;
+		this.updatePlayer  = updatePlayer;
+		this.currentPlayer = currentPlayer;
 		this.cells = new HashMap<>();
 
 		cells.put(TOP_LEFT, new BoardCell(TOP_LEFT));
@@ -68,9 +82,9 @@ public class Board extends JPanel {
 			public void mousePressed(MouseEvent e) {
 				for (BoardCell cell : cells.values()) {
 					Point2D mouse = (Point2D)MouseInfo.getPointerInfo().getLocation();
-					if (cell.getRect().contains(mouse)) {
-						System.out.println("\n\n\n\n\nPressed " + cell.getPosition().name());
+					if (cell.getRect().contains(mouse) && currentPlayer.get().equals(PlayerType.HUMAN)) {
 						cell.fill();
+						updatePlayer.accept(cell.getPosition());
 						break;
 					}
 				}
@@ -95,7 +109,7 @@ public class Board extends JPanel {
 
 	public void updateMousePos(Point point) {
 		for (BoardCell boardCell : cells.values()) {
-			boardCell.updateColor(point);
+			boardCell.updateColor(point, currentPlayer.get());
 		}
 
 	}
@@ -128,4 +142,7 @@ public class Board extends JPanel {
 		}
 	}
 
+	public Dimension getDimension() {
+		return dimension;
+	}
 }

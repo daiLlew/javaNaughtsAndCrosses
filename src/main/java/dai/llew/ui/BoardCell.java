@@ -1,5 +1,7 @@
 package dai.llew.ui;
 
+import dai.llew.game.Player.PlayerType;
+
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -21,11 +23,18 @@ public class BoardCell {
 		this.color = Color.WHITE;
 	}
 
-	public void updateColor(Point point) {
-		if (this.rect.contains(point)) {
-			this.color = Color.GRAY;
-		} else {
-			this.color = Color.WHITE;
+	public void updateColor(Point point, PlayerType player) {
+		switch (player) {
+			case HUMAN:
+				if (this.rect.contains(point)) {
+					this.color = Color.GRAY;
+				} else {
+					this.color = Color.WHITE;
+				}
+				break;
+			default:
+				// Is the computer.
+				this.color = Color.WHITE;
 		}
 	}
 
