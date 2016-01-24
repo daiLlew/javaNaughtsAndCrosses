@@ -1,6 +1,9 @@
 package dai.llew.ui;
 
+import dai.llew.game.Player;
 import dai.llew.game.Player.PlayerType;
+import static dai.llew.game.Player.Symbol.CROSSES;
+import dai.llew.game.Player.Symbol;
 
 import java.awt.Color;
 import java.awt.Point;
@@ -16,6 +19,7 @@ public class BoardCell {
 	private Rectangle2D rect;
 	private Color color;
 	private boolean isFilled = false;
+	private Symbol symbol;
 
 	public BoardCell(CellPosition position) {
 		this.position = position;
@@ -23,10 +27,10 @@ public class BoardCell {
 		this.color = Color.WHITE;
 	}
 
-	public void updateColor(Point point, PlayerType player) {
-		switch (player) {
+	public void updateColor(Point point, Player player) {
+		switch (player.getPlayerType()) {
 			case HUMAN:
-				if (this.rect.contains(point)) {
+				if (this.rect.contains(point) && !this.isFilled()) {
 					this.color = Color.GRAY;
 				} else {
 					this.color = Color.WHITE;
@@ -50,11 +54,16 @@ public class BoardCell {
 		return position;
 	}
 
-	public void fill() {
+	public void fill(Symbol symbol) {
+		this.symbol = symbol;
 		this.isFilled = true;
 	}
 
 	public boolean isFilled() {
 		return isFilled;
+	}
+
+	public Symbol getSymbol() {
+		return symbol;
 	}
 }

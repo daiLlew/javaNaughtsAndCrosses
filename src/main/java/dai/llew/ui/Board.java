@@ -1,6 +1,7 @@
 package dai.llew.ui;
 
-import dai.llew.game.Player.PlayerType;
+import dai.llew.game.Player;
+import dai.llew.game.Player.Symbol;
 
 import javax.swing.*;
 import java.awt.BasicStroke;
@@ -21,6 +22,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static dai.llew.game.Player.PlayerType.HUMAN;
+import static dai.llew.game.Player.Symbol.CROSSES;
 import static dai.llew.ui.CellPosition.BOTTOM_LEFT;
 import static dai.llew.ui.CellPosition.BOTTOM_MID;
 import static dai.llew.ui.CellPosition.BOTTOM_RIGHT;
@@ -39,15 +42,15 @@ public class Board extends JPanel {
 	private Dimension dimension;
 	private Rectangle2D background;
 	private Consumer<CellPosition> updatePlayer;
-	private Supplier<PlayerType> currentPlayer;
+	private Supplier<Player> currentPlayer;
 
 	private Map<CellPosition, BoardCell> cells;
 
-	public Board(Dimension dimension, Supplier<PlayerType> currentPlayer, Consumer<CellPosition> updatePlayer) {
+	public Board(Dimension dimension, Supplier<Player> currentPlayer, Consumer<CellPosition> updatePlayer) {
 		super();
 		setSize(dimension);
 		this.dimension = dimension;
-		this.updatePlayer  = updatePlayer;
+		this.updatePlayer = updatePlayer;
 		this.currentPlayer = currentPlayer;
 		this.cells = new HashMap<>();
 
@@ -80,21 +83,25 @@ public class Board extends JPanel {
 		addMouseListener(new MouseListener() {
 			@Override
 			public void mousePressed(MouseEvent e) {
+				Player player = currentPlayer.get();
+
 				for (BoardCell cell : cells.values()) {
-					Point2D mouse = (Point2D)MouseInfo.getPointerInfo().getLocation();
-					if (cell.getRect().contains(mouse) && currentPlayer.get().equals(PlayerType.HUMAN)) {
-						cell.fill();
+					Point2D mouse = (Point2D) MouseInfo.getPointerInfo().getLocation();
+					if (cell.getRect().contains(mouse) && isHuman(player)) {
+						cell.fill(player.getSymbol());
 						updatePlayer.accept(cell.getPosition());
 						break;
 					}
 				}
 			}
+
 			@Override
 			public void mouseClicked(MouseEvent e) {
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
+				updateMousePos(MouseInfo.getPointerInfo().getLocation());
 			}
 
 			@Override
@@ -111,17 +118,19 @@ public class Board extends JPanel {
 		for (BoardCell boardCell : cells.values()) {
 			boardCell.updateColor(point, currentPlayer.get());
 		}
-
 	}
 
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D) g;
-		g2.setStroke(new BasicStroke(10));
+		g2.setStroke(new BasicStroke(15));
 		this.drawBoard(g2);
 	}
 
+	/**
+	 * Draw the board in its current state.
+	 */
 	private void drawBoard(Graphics2D g) {
 		g.setPaint(Color.BLACK);
 		g.fill(background);
@@ -131,18 +140,48 @@ public class Board extends JPanel {
 			g.fill(cell.getRect());
 
 			if (cell.isFilled()) {
-				g.setPaint(Color.BLACK);
-				int x = cell.getPosition().getX();
-				int y = cell.getPosition().getY();
-
-				g.drawLine(x, y, x + cell.getPosition().getWidth(), y + cell.getPosition().getHeight());
-				g.drawLine(x + cell.getPosition().getWidth(), y, x, y + cell.getPosition().getHeight());
-
+				if (CROSSES.equals(cell.getSymbol())) {
+					drawCross(g, cell.getPosition());
+				} else {
+					drawNaught(g, cell.getPosition());
+				}
 			}
 		}
 	}
 
+	/**
+	 * Draw a Cross at the specified cell position.
+	 */
+	private void drawCross(Graphics2D g, CellPosition pos) {
+		g.setPaint(Color.BLUE);
+		Point topLeft = pos.topLeft();
+		Point bottomLeft = pos.bottomLeft();
+
+		Point bottomRight = pos.bottomRight();
+		Point topRight = pos.topRight();
+
+		g.drawLine(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y);
+		g.drawLine(bottomLeft.x, bottomLeft.y, topRight.x, topRight.y);
+	}
+
+	/**
+	 * Draw a Naught at the specified cell position.
+	 */
+	private void drawNaught(Graphics2D g, CellPosition pos) {
+		g.setPaint(Color.GREEN);
+		Point topLeft = pos.topLeft();
+		g.drawOval(topLeft.x, topLeft.y, Symbol.WIDTH, Symbol.WIDTH);
+	}
+
+	private boolean isHuman(Player player) {
+		return HUMAN.equals(player.getPlayerType());
+	}
+
 	public Dimension getDimension() {
 		return dimension;
+	}
+
+	public Map<CellPosition, BoardCell> getCells() {
+		return cells;
 	}
 }

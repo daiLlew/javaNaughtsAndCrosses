@@ -1,5 +1,7 @@
 package dai.llew.ui;
 
+import java.awt.Point;
+
 /**
  * Created by daiLlew on 17/01/2016.
  */
@@ -19,6 +21,7 @@ public enum CellPosition {
 
 	private static final int WIDTH = 100;
 	private static final int HEIGHT = 100;
+	private static final int PADDING = 20;
 
 	private final int x;
 	private final int y;
@@ -47,4 +50,36 @@ public enum CellPosition {
 	public int getHeight() {
 		return height;
 	}
+
+	/**
+	 * @return X, Y for top right corner for the symbole in this cell pos.
+	 */
+	public Point topLeft() {
+		return new Point(
+				(x + PADDING),
+				(y + PADDING)
+		);
+	}
+
+	public Point topRight() {
+		return new Point(
+				(x + getWidth() - PADDING),
+				(y + PADDING)
+		);
+	}
+
+	public Point bottomLeft() {
+		return new Point(
+				(x + PADDING),
+				(y + getHeight() - PADDING)
+		);
+	}
+
+	public Point bottomRight() {
+		return new Point(
+				(x + getWidth() - PADDING),
+				(y + getHeight() - PADDING)
+		);
+	}
+
 }

@@ -25,16 +25,30 @@ public class Player {
 		COMPUTER
 	}
 
-	private Set<CellPosition> occupiedCells;
-	private PlayerType playerType;
+	public enum Symbol {
+		NAUGHTS,
 
-	public Player(PlayerType playerType) {
+		CROSSES;
+
+		public static final int WIDTH = 60;
+	}
+
+	private Set<CellPosition> occupiedCells;
+	private final PlayerType playerType;
+	private final Symbol symbol;
+
+	public Player(PlayerType playerType, Symbol symbol) {
 		this.playerType = playerType;
 		this.occupiedCells = new HashSet<>();
+		this.symbol = symbol;
 	}
 
 	public PlayerType getPlayerType() {
 		return playerType;
+	}
+
+	public Symbol getSymbol() {
+		return symbol;
 	}
 
 	public Set<CellPosition> getOccupiedCells() {

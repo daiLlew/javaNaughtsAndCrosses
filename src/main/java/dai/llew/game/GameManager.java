@@ -1,44 +1,42 @@
 package dai.llew.game;
 
 import dai.llew.ui.Board;
-import dai.llew.ui.CellPosition;
 import dai.llew.ui.GUI;
 
 import java.awt.Dimension;
-import static dai.llew.game.Player.PlayerType.HUMAN;
+
 import static dai.llew.game.Player.PlayerType.COMPUTER;
-import dai.llew.game.Player.PlayerType;
+import static dai.llew.game.Player.PlayerType.HUMAN;
+import static dai.llew.game.Player.Symbol.CROSSES;
+import static dai.llew.game.Player.Symbol.NAUGHTS;
 
 public class GameManager {
 
 	private GUI gui;
-	private PlayerType currentPlayer;
+	private Player currentPlayer;
+	private Player humanPlayer = new Player(HUMAN, NAUGHTS);
+	private Player computerPlayer = new Player(COMPUTER, CROSSES);
 	private Board board;
+	private AIModule ai;
 	private final Dimension gameDimensions = new Dimension(550, 550);
 
 	public GameManager() {
-		this.currentPlayer = HUMAN;
+		this.currentPlayer = humanPlayer;
 		this.board = new Board(gameDimensions,
 				() -> getCurrentPlayer(),
 				(position) -> {
-					updatePlayer(position);
+					updatePlayer();
 				});
 		this.gui = new GUI(board);
+		this.ai = AIModule.getInstance();
 	}
 
-	public PlayerType getCurrentPlayer() {
+	public Player getCurrentPlayer() {
 		return this.currentPlayer;
 	}
 
-	public void updatePlayer(CellPosition position) {
-		System.out.println(currentPlayer.name() + " chose " + position.name());
-		switch (getCurrentPlayer()) {
-			case HUMAN:
-				this.currentPlayer = COMPUTER;
-				break;
-			default:
-				this.currentPlayer = HUMAN;
-		}
+	public void updatePlayer() {
+		this.currentPlayer = currentPlayer.getPlayerType().equals(HUMAN) ? computerPlayer : humanPlayer;
 	}
 
 	public void play() {
@@ -46,10 +44,11 @@ public class GameManager {
 			while (true) {
 				this.board.repaint();
 				try {
-					if (this.currentPlayer.equals(COMPUTER)) {
-						computerTurn();
+					if (this.currentPlayer.getPlayerType().equals(COMPUTER)) {
+						ai.takeTurn(board, computerPlayer);
+						updatePlayer();
 					} else {
-						Thread.sleep(500);
+						Thread.sleep(50);
 					}
 				} catch (InterruptedException ex) {
 					ex.printStackTrace();
@@ -57,13 +56,6 @@ public class GameManager {
 			}
 		});
 		gameThread.start();
-	}
-
-	private void computerTurn() throws InterruptedException {
-		System.out.println("computer turn so sleeping for a bit.");
-		Thread.sleep(3000);
-		System.out.println("Awake... now its players turn");
-		updatePlayer(CellPosition.BOTTOM_LEFT);
 	}
 
 	public static void main(String[] args) throws Exception {
