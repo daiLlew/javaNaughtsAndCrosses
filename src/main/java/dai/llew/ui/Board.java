@@ -19,7 +19,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static dai.llew.game.Player.PlayerType.HUMAN;
@@ -41,16 +40,16 @@ public class Board extends JPanel {
 
 	private Dimension dimension;
 	private Rectangle2D background;
-	private Consumer<CellPosition> updatePlayer;
+	private Runnable turnCompleted;
 	private Supplier<Player> currentPlayer;
 
 	private Map<CellPosition, BoardCell> cells;
 
-	public Board(Dimension dimension, Supplier<Player> currentPlayer, Consumer<CellPosition> updatePlayer) {
+	public Board(Dimension dimension, Supplier<Player> currentPlayer, Runnable turnCompleted) {
 		super();
 		setSize(dimension);
 		this.dimension = dimension;
-		this.updatePlayer = updatePlayer;
+		this.turnCompleted = turnCompleted;
 		this.currentPlayer = currentPlayer;
 		this.cells = new HashMap<>();
 
@@ -89,7 +88,7 @@ public class Board extends JPanel {
 					Point2D mouse = (Point2D) MouseInfo.getPointerInfo().getLocation();
 					if (cell.getRect().contains(mouse) && isHuman(player)) {
 						cell.fill(player.getSymbol());
-						updatePlayer.accept(cell.getPosition());
+						turnCompleted.run();
 						break;
 					}
 				}
@@ -115,9 +114,7 @@ public class Board extends JPanel {
 	}
 
 	public void updateMousePos(Point point) {
-		for (BoardCell boardCell : cells.values()) {
-			boardCell.updateColor(point, currentPlayer.get());
-		}
+		cells.values().stream().forEach(boardCell -> boardCell.updateColor(point, currentPlayer.get()));
 	}
 
 	@Override
@@ -135,10 +132,9 @@ public class Board extends JPanel {
 		g.setPaint(Color.BLACK);
 		g.fill(background);
 
-		for (BoardCell cell : this.cells.values()) {
+		this.cells.values().stream().forEach(cell -> {
 			g.setPaint(cell.getColor());
 			g.fill(cell.getRect());
-
 			if (cell.isFilled()) {
 				if (CROSSES.equals(cell.getSymbol())) {
 					drawCross(g, cell.getPosition());
@@ -146,7 +142,7 @@ public class Board extends JPanel {
 					drawNaught(g, cell.getPosition());
 				}
 			}
-		}
+		});
 	}
 
 	/**
@@ -183,5 +179,9 @@ public class Board extends JPanel {
 
 	public Map<CellPosition, BoardCell> getCells() {
 		return cells;
+	}
+
+	public BoardCell getCell(CellPosition position) {
+		return cells.get(position);
 	}
 }

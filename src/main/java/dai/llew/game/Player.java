@@ -26,8 +26,14 @@ public class Player {
 	}
 
 	public enum Symbol {
-		NAUGHTS,
+		/**
+		 * The Noughts Symbol.
+		 */
+		NOUGHTS,
 
+		/**
+		 * The Crosses Symbol.
+		 */
 		CROSSES;
 
 		public static final int WIDTH = 60;

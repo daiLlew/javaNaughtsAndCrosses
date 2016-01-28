@@ -25,6 +25,7 @@ public class BoardCell {
 		this.position = position;
 		this.rect = new Rectangle(position.getX(), position.getY(), position.getWidth(), position.getHeight());
 		this.color = Color.WHITE;
+		this.symbol = null;
 	}
 
 	public void updateColor(Point point, Player player) {
