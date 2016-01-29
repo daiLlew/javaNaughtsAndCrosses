@@ -8,9 +8,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static dai.llew.game.Player.Symbol;
+import static dai.llew.game.GameConstants.Symbol;
 import static dai.llew.ui.CellPosition.BOTTOM_LEFT;
 import static dai.llew.ui.CellPosition.BOTTOM_MID;
 import static dai.llew.ui.CellPosition.BOTTOM_RIGHT;
@@ -22,7 +23,7 @@ import static dai.llew.ui.CellPosition.TOP_MID;
 import static dai.llew.ui.CellPosition.TOP_RIGHT;
 
 /**
- * Created by daiLlew on 24/01/2016.
+ * AIModule provides an intelligence t
  */
 public class AIModule {
 
@@ -30,6 +31,9 @@ public class AIModule {
 
 	private static AIModule instance = null;
 
+	/**
+	 * @return a Singleton instance of the {@link AIModule}.
+	 */
 	public static AIModule getInstance() {
 		if (instance == null) {
 			instance = new AIModule();
@@ -37,6 +41,9 @@ public class AIModule {
 		return instance;
 	}
 
+	/**
+	 * Connstruct a new AIModule.
+	 */
 	private AIModule() {
 		// All possible winning combinations
 		winningCombinations = new ArrayList<>();
@@ -50,7 +57,29 @@ public class AIModule {
 		winningCombinations.add(Arrays.asList(new CellPosition[]{TOP_RIGHT, MID_MID, BOTTOM_LEFT}));
 	}
 
-	private CellPosition findWinningMove(Board board, Symbol opponentSymbol) {
+	/**
+	 * Checks if it is possible for the game to be won in the next move. There are 8 possible ways to win the game:
+	 * <ul>
+	 * <li>Top horizontal.</li>
+	 * <li>Middle horizontal.</li>
+	 * <li>Bottom horizontal.</li>
+	 * <li>Left veritcal.</li>
+	 * <li>Middle veritcal.</li>
+	 * <li>Right vertical.</li>
+	 * <li>Diagonal top left to bottom right.</li>
+	 * <li>Diagonal top right to bottom left.</li>
+	 * </ul>
+	 * <p>
+	 * Each of these potential <i>winning combinations</i> is checked to see if any exits that contain 2
+	 * {@link BoardCell}'s with opponent's {@Link Symbol} and one blank {@link BoardCell}. If <b>Yes</b> then the blank
+	 * cell is chosen as either the <i>winning move</i> or a <i>win preventing</i> move. If the above does not exist
+	 * then no winning move exists at this time.
+	 *
+	 * @param board
+	 * @param opponentSymbol
+	 * @return
+	 */
+	private Optional<CellPosition> findWinningMove(Board board, Symbol opponentSymbol) {
 		for (List<CellPosition> combination : winningCombinations) {
 
 			List<BoardCell> currentValues = getCurrentValues(board, combination);
@@ -68,10 +97,10 @@ public class AIModule {
 					// No free cells skip to next combination.
 					continue;
 				}
-				return freeCells.get(0).getPosition();
+				return Optional.of(freeCells.get(0).getPosition());
 			}
 		}
-		return null;
+		return Optional.empty();
 	}
 
 	private List<BoardCell> getCurrentValues(Board board, List<CellPosition> positions) {
@@ -85,31 +114,45 @@ public class AIModule {
 	/**
 	 * Check if the player has 3 cells in a row.
 	 */
-	public boolean isWinner(Board board, Player player) {
+	public Optional<List<CellPosition>> isWinner(Board board, Player player) {
 		for (List<CellPosition> combination : winningCombinations) {
 			if (3 == combination.stream()
 					.filter(cellPosition -> player.getSymbol().equals(board.getCell(cellPosition).getSymbol()))
 					.count()) {
-				return true;
+				return Optional.of(combination);
 			}
 		}
-		return false;
+		return Optional.empty();
 	}
 
 	public boolean isDraw(Board board) {
 		return board.getCells().values().stream().filter(boardCell -> !boardCell.isFilled()).count() == 0;
 	}
 
+	/**
+	 * The AI for the computer player's turn.
+	 * <p>First checks if the computer can win with its next move. If yes then it will choose that {@link BoardCell} for
+	 * it's next move.</p>
+	 * <p>If the computer cannot win the game with it's next move it will check if the opponent can with with their next
+	 * move. If yes then it will block the opponents victory and choose the opponents winning {@link BoardCell} as its
+	 * next move.</p>
+	 * <p>Otherwise the computer will pick a free {@link BoardCell} at random.</p>
+	 *
+	 * @param board
+	 * @param computerPlayer
+	 * @param opponent
+	 * @throws InterruptedException
+	 */
 	public void takeTurn(Board board, Player computerPlayer, Player opponent) throws InterruptedException {
-		// Defend first... if the player can win with their next move block it.
-		CellPosition nextMove = findWinningMove(board, opponent.getSymbol());
+		// Can the computer win with its next move?
+		Optional<CellPosition> nextMove = findWinningMove(board, computerPlayer.getSymbol());
 
-		if (nextMove == null) {
-			// Otherwise can the computer win with its next move?
-			nextMove = findWinningMove(board, computerPlayer.getSymbol());
+		if (!nextMove.isPresent()) {
+			// Otherwise block the player if they can win with their next move.
+			nextMove = findWinningMove(board, opponent.getSymbol());
 		}
 
-		if (nextMove == null) {
+		if (!nextMove.isPresent()) {
 			// Choose a random cell.
 			List<BoardCell> available = board.getCells().values()
 					.stream()
@@ -117,9 +160,9 @@ public class AIModule {
 					.collect(Collectors.toList());
 
 			Collections.shuffle(available);
-			nextMove = available.get(0).getPosition();
+			nextMove = Optional.of(available.get(0).getPosition());
 		}
 		Thread.sleep(1000);
-		board.getCell(nextMove).fill(computerPlayer.getSymbol());
+		board.getCell(nextMove.get()).fill(computerPlayer.getSymbol());
 	}
 }

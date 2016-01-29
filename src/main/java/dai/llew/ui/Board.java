@@ -1,7 +1,7 @@
 package dai.llew.ui;
 
+import dai.llew.game.GameConstants.Symbol;
 import dai.llew.game.Player;
-import dai.llew.game.Player.Symbol;
 
 import javax.swing.*;
 import java.awt.BasicStroke;
@@ -19,10 +19,11 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
-import static dai.llew.game.Player.PlayerType.HUMAN;
-import static dai.llew.game.Player.Symbol.CROSSES;
+import static dai.llew.game.GameConstants.PlayerType.HUMAN;
+import static dai.llew.game.GameConstants.Symbol.CROSSES;
 import static dai.llew.ui.CellPosition.BOTTOM_LEFT;
 import static dai.llew.ui.CellPosition.BOTTOM_MID;
 import static dai.llew.ui.CellPosition.BOTTOM_RIGHT;
@@ -38,21 +39,23 @@ import static dai.llew.ui.CellPosition.TOP_RIGHT;
  */
 public class Board extends JPanel {
 
-	private Dimension dimension;
+	private static final Dimension GAME_DIMENSIONS = new Dimension(550, 550);
+
 	private Rectangle2D background;
 	private Runnable turnCompleted;
-	private Supplier<Player> currentPlayer;
-
+	private Supplier<Player> currentPlayerSupplier;
 	private Map<CellPosition, BoardCell> cells;
+	private MouseMotionListener mouseMotionListener;
+	private MouseListener mouseListener;
 
-	public Board(Dimension dimension, Supplier<Player> currentPlayer, Runnable turnCompleted) {
+	public Board(Supplier<Player> currentPlayerSupplier, Runnable turnCompleted) {
 		super();
-		setSize(dimension);
-		this.dimension = dimension;
-		this.turnCompleted = turnCompleted;
-		this.currentPlayer = currentPlayer;
-		this.cells = new HashMap<>();
+		setSize(GAME_DIMENSIONS);
 
+		this.turnCompleted = turnCompleted;
+		this.currentPlayerSupplier = currentPlayerSupplier;
+
+		this.cells = new HashMap<>();
 		cells.put(TOP_LEFT, new BoardCell(TOP_LEFT));
 		cells.put(TOP_MID, new BoardCell(TOP_MID));
 		cells.put(TOP_RIGHT, new BoardCell(TOP_RIGHT));
@@ -67,7 +70,7 @@ public class Board extends JPanel {
 
 		background = new Rectangle(100, 100, 320, 320);
 
-		addMouseMotionListener(new MouseMotionListener() {
+		this.mouseMotionListener = new MouseMotionListener() {
 			@Override
 			public void mouseMoved(MouseEvent e) {
 				updateMousePos(MouseInfo.getPointerInfo().getLocation());
@@ -76,21 +79,22 @@ public class Board extends JPanel {
 			@Override
 			public void mouseDragged(MouseEvent e) {
 			}
+		};
 
-		});
-
-		addMouseListener(new MouseListener() {
+		this.mouseListener = new MouseListener() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				Player player = currentPlayer.get();
+				Player player = currentPlayerSupplier.get();
+				Point2D mouse = MouseInfo.getPointerInfo().getLocation();
 
-				for (BoardCell cell : cells.values()) {
-					Point2D mouse = (Point2D) MouseInfo.getPointerInfo().getLocation();
-					if (cell.getRect().contains(mouse) && isHuman(player)) {
-						cell.fill(player.getSymbol());
-						turnCompleted.run();
-						break;
-					}
+				Optional<BoardCell> mouseCell = cells.values()
+						.stream()
+						.filter((cell) -> cell.getRect().contains(mouse) && isHuman(player))
+						.findFirst();
+
+				if (mouseCell.isPresent()) {
+					mouseCell.get().fill(player.getSymbol());
+					turnCompleted.run();
 				}
 			}
 
@@ -110,11 +114,14 @@ public class Board extends JPanel {
 			@Override
 			public void mouseExited(MouseEvent e) {
 			}
-		});
+		};
+
+		addMouseMotionListener(mouseMotionListener);
+		addMouseListener(mouseListener);
 	}
 
 	public void updateMousePos(Point point) {
-		cells.values().stream().forEach(boardCell -> boardCell.updateColor(point, currentPlayer.get()));
+		cells.values().stream().forEach(boardCell -> boardCell.updateColor(point, currentPlayerSupplier.get()));
 	}
 
 	@Override
@@ -174,7 +181,7 @@ public class Board extends JPanel {
 	}
 
 	public Dimension getDimension() {
-		return dimension;
+		return GAME_DIMENSIONS;
 	}
 
 	public Map<CellPosition, BoardCell> getCells() {

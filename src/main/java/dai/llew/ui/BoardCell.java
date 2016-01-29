@@ -1,9 +1,9 @@
 package dai.llew.ui;
 
 import dai.llew.game.Player;
-import dai.llew.game.Player.PlayerType;
-import static dai.llew.game.Player.Symbol.CROSSES;
-import dai.llew.game.Player.Symbol;
+import dai.llew.game.GameConstants.PlayerType;
+import static dai.llew.game.GameConstants.Symbol.CROSSES;
+import dai.llew.game.GameConstants.Symbol;
 
 import java.awt.Color;
 import java.awt.Point;
@@ -49,6 +49,10 @@ public class BoardCell {
 
 	public Color getColor() {
 		return color;
+	}
+
+	public void winningCell() {
+		this.color = Color.YELLOW;
 	}
 
 	public CellPosition getPosition() {

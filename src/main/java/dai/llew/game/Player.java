@@ -5,39 +5,15 @@ import dai.llew.ui.CellPosition;
 import java.util.HashSet;
 import java.util.Set;
 
+import static dai.llew.game.GameConstants.PlayerType;
+import static dai.llew.game.GameConstants.Symbol;
+
 /**
  * Created by daiLlew on 23/01/2016.
  */
 public class Player {
 
-	/**
-	 * Types to distinguish which player is playing.
-	 */
-	public enum PlayerType {
-		/**
-		 * A Human player.
-		 */
-		HUMAN,
 
-		/**
-		 * The computer AI.
-		 */
-		COMPUTER
-	}
-
-	public enum Symbol {
-		/**
-		 * The Noughts Symbol.
-		 */
-		NOUGHTS,
-
-		/**
-		 * The Crosses Symbol.
-		 */
-		CROSSES;
-
-		public static final int WIDTH = 60;
-	}
 
 	private Set<CellPosition> occupiedCells;
 	private final PlayerType playerType;
