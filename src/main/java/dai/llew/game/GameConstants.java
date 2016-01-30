@@ -1,11 +1,48 @@
 package dai.llew.game;
 
+import java.awt.Dimension;
+
 public class GameConstants {
 
 	/**
-	 * Type for the outcome of a game.
+	 * The size of the O's & X's
 	 */
-	public enum GameResult {
+	public static final int SYMBOL_SIZE = 60;
+	/**
+	 * The main window width.
+	 */
+	public static final int WINDOW_WIDTH = 520;
+	/**
+	 * The main window height.
+	 */
+	public static final int WINDOW_HEIGHT = 520;
+	/**
+	 * The main window dimensions.
+	 */
+	public static final Dimension GAME_DIMENSIONS = new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT);
+	/**
+	 * The X/Y coordinate of the top left corner of the board.
+	 */
+	public static final int BOARD_COORD = 100;
+	/**
+	 * The board dimensions.
+	 */
+	public static final Dimension BOARD_DIMENSIONS = new Dimension(320, 320);
+	/**
+	 * The thickness of the lines drawn.
+	 */
+	public static final int STROKE_SIZE = 15;
+
+	/**
+	 * Types to classify if the game is still in play or if it is completed.
+	 */
+	public enum GameStatus {
+
+		/**
+		 * The game is still in play.
+		 */
+		IN_PLAY,
+
 		/**
 		 * A {@link Player} won the game.
 		 */
@@ -14,23 +51,7 @@ public class GameConstants {
 		/**
 		 * Neither {@link Player} won the game.
 		 */
-		DRAW
-	}
-
-	/**
-	 * Types to classify if the game is still in play or if it is completed.
-	 */
-	public enum GameState {
-
-		/**
-		 * The game is still in play.
-		 */
-		PENDING,
-
-		/**
-		 * The game is over.
-		 */
-		COMPLETED
+		DRAWN;
 	}
 
 	/**
@@ -58,7 +79,5 @@ public class GameConstants {
 		 * The Crosses Symbol.
 		 */
 		CROSSES;
-
-		public static final int WIDTH = 60;
 	}
 }

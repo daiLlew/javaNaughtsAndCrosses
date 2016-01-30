@@ -34,12 +34,12 @@ public class BoardCell {
 				if (this.rect.contains(point) && !this.isFilled()) {
 					this.color = Color.GRAY;
 				} else {
-					this.color = Color.WHITE;
+					this.color = Color.BLACK;
 				}
 				break;
 			default:
 				// Is the computer.
-				this.color = Color.WHITE;
+				this.color = Color.BLACK;
 		}
 	}
 

@@ -1,6 +1,8 @@
 package dai.llew.ui;
 
-import dai.llew.game.GameConstants.Symbol;
+import static dai.llew.game.GameConstants.BOARD_DIMENSIONS;
+import static dai.llew.game.GameConstants.STROKE_SIZE;
+import static dai.llew.game.GameConstants.SYMBOL_SIZE;
 import dai.llew.game.Player;
 
 import javax.swing.*;
@@ -24,6 +26,8 @@ import java.util.function.Supplier;
 
 import static dai.llew.game.GameConstants.PlayerType.HUMAN;
 import static dai.llew.game.GameConstants.Symbol.CROSSES;
+import static dai.llew.game.GameConstants.GAME_DIMENSIONS;
+import static dai.llew.game.GameConstants.BOARD_COORD;
 import static dai.llew.ui.CellPosition.BOTTOM_LEFT;
 import static dai.llew.ui.CellPosition.BOTTOM_MID;
 import static dai.llew.ui.CellPosition.BOTTOM_RIGHT;
@@ -39,8 +43,6 @@ import static dai.llew.ui.CellPosition.TOP_RIGHT;
  */
 public class Board extends JPanel {
 
-	private static final Dimension GAME_DIMENSIONS = new Dimension(550, 550);
-
 	private Rectangle2D background;
 	private Runnable turnCompleted;
 	private Supplier<Player> currentPlayerSupplier;
@@ -48,7 +50,7 @@ public class Board extends JPanel {
 	private MouseMotionListener mouseMotionListener;
 	private MouseListener mouseListener;
 
-	public Board(Supplier<Player> currentPlayerSupplier, Runnable turnCompleted) {
+	private Board(Supplier<Player> currentPlayerSupplier, Runnable turnCompleted) {
 		super();
 		setSize(GAME_DIMENSIONS);
 
@@ -68,7 +70,7 @@ public class Board extends JPanel {
 		cells.put(BOTTOM_MID, new BoardCell(BOTTOM_MID));
 		cells.put(BOTTOM_RIGHT, new BoardCell(BOTTOM_RIGHT));
 
-		background = new Rectangle(100, 100, 320, 320);
+		background = new Rectangle(BOARD_COORD, BOARD_COORD, BOARD_DIMENSIONS.width, BOARD_DIMENSIONS.height);
 
 		this.mouseMotionListener = new MouseMotionListener() {
 			@Override
@@ -118,6 +120,7 @@ public class Board extends JPanel {
 
 		addMouseMotionListener(mouseMotionListener);
 		addMouseListener(mouseListener);
+		setVisible(true);
 	}
 
 	public void updateMousePos(Point point) {
@@ -128,7 +131,7 @@ public class Board extends JPanel {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D) g;
-		g2.setStroke(new BasicStroke(15));
+		g2.setStroke(new BasicStroke(STROKE_SIZE));
 		this.drawBoard(g2);
 	}
 
@@ -136,7 +139,7 @@ public class Board extends JPanel {
 	 * Draw the board in its current state.
 	 */
 	private void drawBoard(Graphics2D g) {
-		g.setPaint(Color.BLACK);
+		g.setPaint(Color.WHITE);
 		g.fill(background);
 
 		this.cells.values().stream().forEach(cell -> {
@@ -156,7 +159,7 @@ public class Board extends JPanel {
 	 * Draw a Cross at the specified cell position.
 	 */
 	private void drawCross(Graphics2D g, CellPosition pos) {
-		g.setPaint(Color.BLUE);
+		g.setPaint(Color.WHITE);
 		Point topLeft = pos.topLeft();
 		Point bottomLeft = pos.bottomLeft();
 
@@ -171,17 +174,13 @@ public class Board extends JPanel {
 	 * Draw a Naught at the specified cell position.
 	 */
 	private void drawNaught(Graphics2D g, CellPosition pos) {
-		g.setPaint(Color.GREEN);
+		g.setPaint(Color.WHITE);
 		Point topLeft = pos.topLeft();
-		g.drawOval(topLeft.x, topLeft.y, Symbol.WIDTH, Symbol.WIDTH);
+		g.drawOval(topLeft.x, topLeft.y, SYMBOL_SIZE, SYMBOL_SIZE);
 	}
 
 	private boolean isHuman(Player player) {
 		return HUMAN.equals(player.getPlayerType());
-	}
-
-	public Dimension getDimension() {
-		return GAME_DIMENSIONS;
 	}
 
 	public Map<CellPosition, BoardCell> getCells() {
@@ -190,5 +189,28 @@ public class Board extends JPanel {
 
 	public BoardCell getCell(CellPosition position) {
 		return cells.get(position);
+	}
+
+	/**
+	 *
+	 */
+	public static class Builder {
+		private Board board;
+		private Supplier<Player> currentPlayerSupplier;
+		private Runnable turnCompleted;
+
+		public Builder currentPlayerSupplier(Supplier<Player> currentPlayerSupplier) {
+			this.currentPlayerSupplier = currentPlayerSupplier;
+			return this;
+		}
+
+		public Builder turnCompleted(Runnable turnCompleted) {
+			this.turnCompleted = turnCompleted;
+			return this;
+		}
+
+		public Board build() {
+			return new Board(this.currentPlayerSupplier, this.turnCompleted);
+		}
 	}
 }

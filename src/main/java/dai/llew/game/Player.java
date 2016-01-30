@@ -8,12 +8,7 @@ import java.util.Set;
 import static dai.llew.game.GameConstants.PlayerType;
 import static dai.llew.game.GameConstants.Symbol;
 
-/**
- * Created by daiLlew on 23/01/2016.
- */
 public class Player {
-
-
 
 	private Set<CellPosition> occupiedCells;
 	private final PlayerType playerType;
