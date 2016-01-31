@@ -7,8 +7,6 @@ import dai.llew.ui.WelcomeDisplay;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static dai.llew.game.GameConstants.GameStatus;
 import static dai.llew.game.GameConstants.GameStatus.DRAWN;
@@ -39,6 +37,7 @@ public class GameManager {
 	private AIModule aiModule;
 	private GameStatus gameStatus = START_MENU;
 	private List<CellPosition> winningCombination;
+	private GameHelper gameHelper;
 
 	/**
 	 * Create a new GameManager.
@@ -47,16 +46,35 @@ public class GameManager {
 		this.currentPlayer = humanPlayer;
 		this.aiModule = AIModule.getInstance();
 
-		final Supplier<Player> getCurrentPlayer = () -> this.getCurrentPlayer();
-		final Runnable turnCompleted = () -> checkGameState();
+		this.gameHelper = new GameHelper() {
+			@Override
+			public Player getCurrentPlayer() {
+				return currentPlayer;
+			}
 
-		this.boardDisplay = new BoardDisplay.Builder()
-				.currentPlayerSupplier(getCurrentPlayer)
-				.turnCompleted(turnCompleted)
-				.build();
+			@Override
+			public Player humanPlayer() {
+				return humanPlayer;
+			}
 
-		final Consumer<Symbol> symbolSelectedCallback = (symbol -> startGame(symbol));
-		WelcomeDisplay view = new WelcomeDisplay(symbolSelectedCallback);
+			@Override
+			public Player computerPlayer() {
+				return computerPlayer;
+			}
+
+			@Override
+			public void turnTaken() {
+				checkGameState();
+			}
+
+			@Override
+			public void symbolSelected(Symbol playerSymbol) {
+				startGame(playerSymbol);
+			}
+		};
+
+		boardDisplay = new BoardDisplay(gameHelper);
+		WelcomeDisplay view = new WelcomeDisplay(gameHelper);
 		this.gui = new GUI(view);
 	}
 

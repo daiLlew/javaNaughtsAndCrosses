@@ -1,6 +1,9 @@
 package dai.llew.ui;
 
 import javax.swing.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -12,11 +15,14 @@ import static dai.llew.game.GameConstants.MEDIUM_STROKE;
 import static dai.llew.game.GameConstants.SYMBOL_COLOR;
 import static dai.llew.game.GameConstants.SYMBOL_SIZE;
 import static dai.llew.game.GameConstants.THIN_STROKE;
+import static dai.llew.game.GameConstants.WINDOW_WIDTH;
 
 /**
  * Defines common behaviour for Game Display implementations.
  */
 public abstract class GameDisplay extends JPanel {
+
+	protected Font font = new Font("Courier New", Font.BOLD, 24);
 
 	public GameDisplay() {
 		super();
@@ -61,6 +67,14 @@ public abstract class GameDisplay extends JPanel {
 		super.paintComponent(g);
 		Graphics2D g2d = (Graphics2D) g;
 		updateDisplay(g2d);
+	}
+
+	protected void writeMessage(Graphics2D g, String message, int y) {
+		g.setPaint(Color.WHITE);
+		g.setFont(font);
+		FontMetrics fm = g.getFontMetrics();
+		int x = (WINDOW_WIDTH - fm.stringWidth(message)) / 2;
+		g.drawString(message, x, y);
 	}
 
 	protected abstract void updateDisplay(Graphics2D g);

@@ -1,8 +1,8 @@
 package dai.llew.ui;
 
+import dai.llew.game.GameHelper;
+
 import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.MouseInfo;
 import java.awt.Point;
@@ -10,11 +10,9 @@ import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.util.function.Consumer;
 
 import static dai.llew.game.GameConstants.GAME_DIMENSIONS;
 import static dai.llew.game.GameConstants.Symbol;
-import static dai.llew.game.GameConstants.WINDOW_WIDTH;
 
 /**
  * Created by daiLlew on 30/01/2016.
@@ -24,12 +22,12 @@ public class WelcomeDisplay extends GameDisplay {
 	private Rectangle noughtsArea;
 	private Rectangle crossesArea;
 	private Point mousePoint = MouseInfo.getPointerInfo().getLocation();
-	private Consumer<Symbol> symbolSelectedCallback;
+	private GameHelper gameHelper;
 
-	public WelcomeDisplay(Consumer<Symbol> symbolSelectedCallback) {
+	public WelcomeDisplay(GameHelper helper) {
 		super();
 
-		this.symbolSelectedCallback = symbolSelectedCallback;
+		this.gameHelper = helper;
 
 		CellPosition pos = CellPosition.MID_LEFT;
 		noughtsArea = new Rectangle(pos.getX(), pos.getY(), pos.getWidth(), pos.getHeight());
@@ -52,9 +50,9 @@ public class WelcomeDisplay extends GameDisplay {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (noughtsArea.contains(e.getPoint())) {
-					symbolSelectedCallback.accept(Symbol.NOUGHTS);
+					gameHelper.symbolSelected(Symbol.NOUGHTS);
 				} else if (crossesArea.contains(e.getPoint())) {
-					symbolSelectedCallback.accept(Symbol.CROSSES);
+					gameHelper.symbolSelected(Symbol.CROSSES);
 				}
 			}
 
@@ -82,18 +80,8 @@ public class WelcomeDisplay extends GameDisplay {
 		g.setPaint(Color.BLACK);
 		g.fill(background);
 
-		g.setPaint(Color.WHITE);
-		g.setFont(new Font("Courier New", Font.BOLD, 24));
-
-		String message = "Welcome to Noughts and Crosses";
-		FontMetrics fm = g.getFontMetrics();
-
-		int x = (WINDOW_WIDTH - fm.stringWidth(message)) / 2;
-		g.drawString(message, x, 60);
-
-		String selectASide = "Select your symbol";
-		x = (WINDOW_WIDTH - fm.stringWidth(selectASide)) / 2;
-		g.drawString(selectASide, x, 120);
+		writeMessage(g, "Welcome to Noughts and Crosses", 60);
+		writeMessage(g, "Select your symbol", 120);
 
 		drawNought(g, CellPosition.MID_LEFT);
 		if (noughtsArea.contains(mousePoint)) {

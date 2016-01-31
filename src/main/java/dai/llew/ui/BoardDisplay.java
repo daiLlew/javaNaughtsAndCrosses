@@ -1,5 +1,6 @@
 package dai.llew.ui;
 
+import dai.llew.game.GameHelper;
 import dai.llew.game.Player;
 
 import java.awt.Color;
@@ -15,7 +16,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import static dai.llew.game.GameConstants.BOARD_COORD;
 import static dai.llew.game.GameConstants.BOARD_DIMENSIONS;
@@ -40,25 +40,21 @@ import static dai.llew.ui.CellPosition.TOP_RIGHT;
 public class BoardDisplay extends GameDisplay {
 
 	private Rectangle2D background;
-	private Runnable turnCompleted;
-	private Supplier<Player> currentPlayerSupplier;
 	private Map<CellPosition, BoardCell> cells;
 	private MouseMotionListener mouseMotionListener;
 	private MouseListener mouseListener;
 	private Point mousePoint = MouseInfo.getPointerInfo().getLocation();
 	private Optional<StrikeLine> strikeThrough = Optional.empty();
 
+	private GameHelper gameHelper;
+
 	/**
 	 * Construct the game BoardDisplay.
-	 *
-	 * @param currentPlayerSupplier callback function to get the current {@link Player}.
-	 * @param turnCompleted         callback function to notifying when the current {@link Player} has completed their turn.
 	 */
-	private BoardDisplay(Supplier<Player> currentPlayerSupplier, Runnable turnCompleted) {
+	public BoardDisplay(GameHelper helper) {
 		super();
 
-		this.turnCompleted = turnCompleted;
-		this.currentPlayerSupplier = currentPlayerSupplier;
+		this.gameHelper = helper;
 		this.background = new Rectangle(BOARD_COORD, BOARD_COORD, BOARD_DIMENSIONS.width, BOARD_DIMENSIONS.height);
 
 		this.cells = new HashMap<>();
@@ -87,7 +83,7 @@ public class BoardDisplay extends GameDisplay {
 		this.mouseListener = new MouseListener() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				Player player = currentPlayerSupplier.get();
+				Player player = gameHelper.getCurrentPlayer();
 				Point2D mouse = e.getPoint();
 
 				Optional<BoardCell> mouseCell = cells.values()
@@ -97,7 +93,7 @@ public class BoardDisplay extends GameDisplay {
 
 				if (mouseCell.isPresent()) {
 					mouseCell.get().fill(player.getSymbol());
-					turnCompleted.run();
+					gameHelper.turnTaken();
 				}
 			}
 
@@ -124,7 +120,7 @@ public class BoardDisplay extends GameDisplay {
 	}
 
 	public void updateMousePos(Point point) {
-		cells.values().stream().forEach(boardCell -> boardCell.updateColor(point, currentPlayerSupplier.get()));
+		cells.values().stream().forEach(boardCell -> boardCell.updateColor(point, gameHelper.getCurrentPlayer()));
 	}
 
 	/**
@@ -151,6 +147,9 @@ public class BoardDisplay extends GameDisplay {
 		if (strikeThrough.isPresent()) {
 			drawStrikeThrough(g);
 		}
+		String message = String.format("Player: %s\t\tComputer: %s", gameHelper.humanPlayer().getSymbol().name(),
+				gameHelper.computerPlayer().getSymbol().name());
+		writeMessage(g, message, 40);
 		revalidate();
 	}
 
@@ -196,28 +195,5 @@ public class BoardDisplay extends GameDisplay {
 
 	public BoardCell getCell(CellPosition position) {
 		return cells.get(position);
-	}
-
-	/**
-	 * Builder for creating new {@link BoardDisplay}.
-	 */
-	public static class Builder {
-		private BoardDisplay boardDisplay;
-		private Supplier<Player> currentPlayerSupplier;
-		private Runnable turnCompleted;
-
-		public Builder currentPlayerSupplier(Supplier<Player> currentPlayerSupplier) {
-			this.currentPlayerSupplier = currentPlayerSupplier;
-			return this;
-		}
-
-		public Builder turnCompleted(Runnable turnCompleted) {
-			this.turnCompleted = turnCompleted;
-			return this;
-		}
-
-		public BoardDisplay build() {
-			return new BoardDisplay(this.currentPlayerSupplier, this.turnCompleted);
-		}
 	}
 }
