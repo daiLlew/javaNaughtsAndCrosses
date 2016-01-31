@@ -43,7 +43,7 @@ public class GameConstants {
 	 */
 	public static final BasicStroke THIN_STROKE = new BasicStroke(3);
 
-	public static final Color HIGHLIGHT_COLOR = new Color(0,120,255);
+	public static final Color HIGHLIGHT_COLOR = new Color(0/255.0f, 120/255.0f, 255/255.0f, 0.6f);
 
 	public static final Color SYMBOL_COLOR = Color.WHITE;
 
