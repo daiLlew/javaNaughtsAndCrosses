@@ -27,7 +27,7 @@ import static dai.llew.ui.CellPosition.TOP_RIGHT;
  */
 public class AIModule {
 
-	List<List<CellPosition>> winningCombinations = null;
+	private List<List<CellPosition>> winningCombinations = null;
 
 	private static AIModule instance = null;
 
@@ -46,6 +46,7 @@ public class AIModule {
 	 */
 	private AIModule() {
 		// All possible winning combinations
+
 		winningCombinations = new ArrayList<>();
 		winningCombinations.add(Arrays.asList(new CellPosition[]{TOP_LEFT, TOP_MID, TOP_RIGHT}));
 		winningCombinations.add(Arrays.asList(new CellPosition[]{MID_LEFT, MID_MID, MID_RIGHT}));

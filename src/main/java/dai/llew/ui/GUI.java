@@ -12,37 +12,27 @@ public class GUI {
 	private static final String TITLE = "Java Naughts & Crosses";
 
 	private JFrame mainFrame;
-	private Board board;
-	private StartPanel startPanel;
+	private JPanel canvas;
 
-	public GUI(Board board) {
-		this.board = board;
+	public GUI(JPanel canvas) {
 		this.mainFrame = new JFrame(TITLE);
 		this.mainFrame.setSize(GAME_DIMENSIONS);
 		this.mainFrame.setResizable(false);
 		this.mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		this.startPanel = new StartPanel();
-
-		this.mainFrame.getContentPane().add(board);
-		//this.mainFrame.getContentPane().add(startPanel);
+		this.canvas = canvas;
+		this.mainFrame.getContentPane().add(canvas);
 		this.mainFrame.setVisible(true);
 
 	}
 
-	public Board getBoard() {
-		return this.board;
+	public void updateDisplay(JPanel update) {
+		this.mainFrame.getContentPane().remove(canvas);
+		this.mainFrame.getContentPane().add(update);
+		this.mainFrame.revalidate();
 	}
 
 	public JFrame getMainFrame() {
 		return this.mainFrame;
-	}
-
-	public StartPanel getStartPanel() {
-		return startPanel;
-	}
-
-	public void setStartPanel(StartPanel startPanel) {
-		this.startPanel = startPanel;
 	}
 }

@@ -1,14 +1,9 @@
 package dai.llew.ui;
 
-import static dai.llew.game.GameConstants.BOARD_DIMENSIONS;
-import static dai.llew.game.GameConstants.STROKE_SIZE;
-import static dai.llew.game.GameConstants.SYMBOL_SIZE;
 import dai.llew.game.Player;
 
 import javax.swing.*;
-import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.MouseInfo;
@@ -24,10 +19,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static dai.llew.game.GameConstants.PlayerType.HUMAN;
-import static dai.llew.game.GameConstants.Symbol.CROSSES;
-import static dai.llew.game.GameConstants.GAME_DIMENSIONS;
 import static dai.llew.game.GameConstants.BOARD_COORD;
+import static dai.llew.game.GameConstants.BOARD_DIMENSIONS;
+import static dai.llew.game.GameConstants.GAME_DIMENSIONS;
+import static dai.llew.game.GameConstants.HIGHLIGHT_COLOR;
+import static dai.llew.game.GameConstants.PlayerType.HUMAN;
+import static dai.llew.game.GameConstants.SYMBOL_SIZE;
+import static dai.llew.game.GameConstants.MEDIUM_STROKE;
+import static dai.llew.game.GameConstants.THICK_STROKE;
+import static dai.llew.game.GameConstants.THIN_STROKE;
 import static dai.llew.ui.CellPosition.BOTTOM_LEFT;
 import static dai.llew.ui.CellPosition.BOTTOM_MID;
 import static dai.llew.ui.CellPosition.BOTTOM_RIGHT;
@@ -49,6 +49,9 @@ public class Board extends JPanel {
 	private Map<CellPosition, BoardCell> cells;
 	private MouseMotionListener mouseMotionListener;
 	private MouseListener mouseListener;
+	private Point mousePoint = MouseInfo.getPointerInfo().getLocation();
+	private Optional<Point> strikeStart = Optional.empty();
+	private Optional<Point> strikeEnd = Optional.empty();
 
 	private Board(Supplier<Player> currentPlayerSupplier, Runnable turnCompleted) {
 		super();
@@ -75,7 +78,8 @@ public class Board extends JPanel {
 		this.mouseMotionListener = new MouseMotionListener() {
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				updateMousePos(MouseInfo.getPointerInfo().getLocation());
+				//updateMousePos(e.getPoint());
+				mousePoint = e.getPoint();
 			}
 
 			@Override
@@ -87,7 +91,7 @@ public class Board extends JPanel {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				Player player = currentPlayerSupplier.get();
-				Point2D mouse = MouseInfo.getPointerInfo().getLocation();
+				Point2D mouse = e.getPoint();
 
 				Optional<BoardCell> mouseCell = cells.values()
 						.stream()
@@ -106,7 +110,7 @@ public class Board extends JPanel {
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				updateMousePos(MouseInfo.getPointerInfo().getLocation());
+				//updateMousePos(e.getPoint());
 			}
 
 			@Override
@@ -131,7 +135,7 @@ public class Board extends JPanel {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D) g;
-		g2.setStroke(new BasicStroke(STROKE_SIZE));
+		g2.setStroke(MEDIUM_STROKE);
 		this.drawBoard(g2);
 	}
 
@@ -139,20 +143,57 @@ public class Board extends JPanel {
 	 * Draw the board in its current state.
 	 */
 	private void drawBoard(Graphics2D g) {
+		g.setPaint(Color.BLACK);
+		g.fill(new Rectangle(GAME_DIMENSIONS));
+
 		g.setPaint(Color.WHITE);
 		g.fill(background);
 
 		this.cells.values().stream().forEach(cell -> {
-			g.setPaint(cell.getColor());
+			g.setPaint(Color.BLACK);
 			g.fill(cell.getRect());
+			if (cell.getRect().contains(mousePoint) && !cell.isFilled()) {
+				highlightCell(g, cell.getPosition());
+			}
 			if (cell.isFilled()) {
-				if (CROSSES.equals(cell.getSymbol())) {
-					drawCross(g, cell.getPosition());
-				} else {
-					drawNaught(g, cell.getPosition());
-				}
+				drawSymbol(g, cell);
 			}
 		});
+
+		if (strikeStart.isPresent() && strikeEnd.isPresent()) {
+			g.setStroke(THICK_STROKE);
+			g.setPaint(HIGHLIGHT_COLOR);
+			g.drawLine(strikeStart.get().x, strikeStart.get().y, strikeEnd.get().x, strikeEnd.get().y);
+		}
+		revalidate();
+	}
+
+	public void setStrike(Point start, Point end) {
+		this.strikeStart = Optional.of(start);
+		this.strikeEnd = Optional.of(end);
+	}
+
+	private void highlightCell(Graphics2D g, CellPosition position) {
+		g.setStroke(THIN_STROKE);
+		g.setPaint(HIGHLIGHT_COLOR);
+		int stokeThickness = new Float(THIN_STROKE.getLineWidth()).intValue();
+
+		g.drawRect(position.getX() + stokeThickness,
+				position.getY() + stokeThickness,
+				position.getWidth() - stokeThickness,
+				position.getHeight() - stokeThickness);
+	}
+
+	private void drawSymbol(Graphics2D g, BoardCell cell) {
+		g.setStroke(MEDIUM_STROKE);
+		switch (cell.getSymbol()) {
+			case CROSSES:
+				drawCross(g, cell.getPosition());
+				break;
+			case NOUGHTS:
+				drawNaught(g, cell.getPosition());
+				break;
+		}
 	}
 
 	/**

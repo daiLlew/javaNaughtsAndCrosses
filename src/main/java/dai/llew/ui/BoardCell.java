@@ -1,9 +1,7 @@
 package dai.llew.ui;
 
-import dai.llew.game.Player;
-import dai.llew.game.GameConstants.PlayerType;
-import static dai.llew.game.GameConstants.Symbol.CROSSES;
 import dai.llew.game.GameConstants.Symbol;
+import dai.llew.game.Player;
 
 import java.awt.Color;
 import java.awt.Point;
@@ -24,7 +22,7 @@ public class BoardCell {
 	public BoardCell(CellPosition position) {
 		this.position = position;
 		this.rect = new Rectangle(position.getX(), position.getY(), position.getWidth(), position.getHeight());
-		this.color = Color.WHITE;
+		this.color = Color.BLACK;
 		this.symbol = null;
 	}
 

@@ -1,5 +1,7 @@
 package dai.llew.game;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Dimension;
 
 public class GameConstants {
@@ -29,14 +31,31 @@ public class GameConstants {
 	 */
 	public static final Dimension BOARD_DIMENSIONS = new Dimension(320, 320);
 	/**
-	 * The thickness of the lines drawn.
+	 * Thick Stoke.
 	 */
-	public static final int STROKE_SIZE = 15;
+	public static final BasicStroke THICK_STROKE = new BasicStroke(15);
+	/**
+	 * Thick Stoke.
+	 */
+	public static final BasicStroke MEDIUM_STROKE = new BasicStroke(20);
+	/**
+	 * Thin Stroke.
+	 */
+	public static final BasicStroke THIN_STROKE = new BasicStroke(3);
+
+	public static final Color HIGHLIGHT_COLOR = new Color(0,120,255);
+
+	public static final Color SYMBOL_COLOR = Color.WHITE;
 
 	/**
 	 * Types to classify if the game is still in play or if it is completed.
 	 */
 	public enum GameStatus {
+
+		/**
+		 *
+		 */
+		START_MENU,
 
 		/**
 		 * The game is still in play.

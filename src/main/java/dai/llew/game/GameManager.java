@@ -3,19 +3,24 @@ package dai.llew.game;
 import dai.llew.ui.Board;
 import dai.llew.ui.CellPosition;
 import dai.llew.ui.GUI;
+import dai.llew.ui.StartPanel;
 
+import java.awt.Point;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static dai.llew.game.GameConstants.GameStatus;
 import static dai.llew.game.GameConstants.GameStatus.DRAWN;
 import static dai.llew.game.GameConstants.GameStatus.IN_PLAY;
+import static dai.llew.game.GameConstants.GameStatus.START_MENU;
 import static dai.llew.game.GameConstants.GameStatus.WON;
 import static dai.llew.game.GameConstants.PlayerType.COMPUTER;
 import static dai.llew.game.GameConstants.PlayerType.HUMAN;
 import static dai.llew.game.GameConstants.Symbol.CROSSES;
 import static dai.llew.game.GameConstants.Symbol.NOUGHTS;
+import static dai.llew.game.GameConstants.Symbol;
 
 /**
  * Game manager is responsible:
@@ -29,11 +34,11 @@ public class GameManager {
 
 	private GUI gui;
 	private Player currentPlayer;
-	private Player humanPlayer = new Player(HUMAN, NOUGHTS);
-	private Player computerPlayer = new Player(COMPUTER, CROSSES);
+	private Player humanPlayer;
+	private Player computerPlayer;
 	private Board board;
 	private AIModule aiModule;
-	private GameStatus gameStatus = IN_PLAY;
+	private GameStatus gameStatus = START_MENU;
 	private List<CellPosition> winningCombination;
 
 	/**
@@ -42,13 +47,42 @@ public class GameManager {
 	public GameManager() {
 		this.currentPlayer = humanPlayer;
 		this.aiModule = AIModule.getInstance();
+
 		final Supplier<Player> getCurrentPlayer = () -> this.getCurrentPlayer();
 		final Runnable turnCompleted = () -> checkGameState();
+
 		this.board = new Board.Builder()
 				.currentPlayerSupplier(getCurrentPlayer)
 				.turnCompleted(turnCompleted)
 				.build();
-		this.gui = new GUI(board);
+
+		final Consumer<Symbol> symbolSelectedCallback = (symbol -> startGame(symbol));
+		StartPanel view = new StartPanel(symbolSelectedCallback);
+		this.gui = new GUI(view);
+	}
+
+	private void startGame(Symbol playerSymbol) {
+		try {
+			Thread.sleep(500);
+
+			switch (playerSymbol) {
+				case NOUGHTS:
+					this.humanPlayer = new Player(HUMAN, NOUGHTS);
+					this.computerPlayer = new Player(COMPUTER, CROSSES);
+					this.currentPlayer = humanPlayer;
+					break;
+				default:
+					this.computerPlayer = new Player(COMPUTER, NOUGHTS);
+					this.humanPlayer = new Player(HUMAN, CROSSES);
+					this.currentPlayer = computerPlayer;
+			}
+
+			gameStatus = IN_PLAY;
+			gui.updateDisplay(board);
+			this.playGame();
+		} catch (InterruptedException ex) {
+			ex.printStackTrace();
+		}
 	}
 
 	/**
@@ -62,21 +96,34 @@ public class GameManager {
 	 * Updates which {@link Player}'s turn it is.
 	 */
 	public void updatePlayer() {
-		this.currentPlayer = currentPlayer.getPlayerType().equals(HUMAN) ? computerPlayer : humanPlayer;
+		currentPlayer = currentPlayer.getPlayerType().equals(HUMAN) ? computerPlayer : humanPlayer;
 	}
 
 	public void play() {
-		playGame();
+		execute(() -> {
+			while(gameStatus.equals(START_MENU)) {
+				gui.getMainFrame().repaint();
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
+	}
+
+	private void execute(Runnable instructions) {
+		new Thread(instructions).start();
 	}
 
 	/**
 	 * The main <i>Game Loop</i> orchestrating the running of the game.
 	 */
-	private void playGame() {
-		Thread gameThread = new Thread(() -> {
+	public void playGame() {
+		execute(() -> {
 			while (gameStatus.equals(IN_PLAY)) {
 				try {
-					this.board.repaint();
+					gui.getMainFrame().repaint();
 					if (currentPlayer.getPlayerType().equals(COMPUTER)) {
 						aiModule.takeTurn(board, computerPlayer, humanPlayer);
 						checkGameState();
@@ -88,7 +135,6 @@ public class GameManager {
 				}
 			}
 			if (gameStatus.equals(WON)) {
-				//board.disableMouseListeners();
 				highlightWinningCells();
 				this.board.repaint();
 				try {
@@ -99,7 +145,6 @@ public class GameManager {
 				System.exit(0);
 			}
 		});
-		gameThread.start();
 	}
 
 	/**
@@ -125,7 +170,13 @@ public class GameManager {
 	 * Add a highlight to each of the winning {@link dai.llew.ui.BoardCell}'s to show the user game is won.
 	 */
 	private void highlightWinningCells() {
-		winningCombination.stream().forEach(cellPosition -> board.getCell(cellPosition).winningCell());
+		CellPosition start = winningCombination.get(0);
+		Point strikeStart = new Point(start.getX(), start.getY());
+
+		CellPosition end = winningCombination.get(2);
+		Point strikeEnd = new Point(end.getX(), end.getY());
+
+		board.setStrike(strikeStart, strikeEnd);
 	}
 
 	public static void main(String[] args) throws Exception {
