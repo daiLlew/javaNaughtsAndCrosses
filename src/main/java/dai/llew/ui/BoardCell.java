@@ -14,7 +14,7 @@ import java.awt.geom.Rectangle2D;
 public class BoardCell {
 
 	private CellPosition position;
-	private Rectangle2D rect;
+	private Rectangle rect;
 	private Color color;
 	private boolean isFilled = false;
 	private Symbol symbol;
@@ -41,16 +41,8 @@ public class BoardCell {
 		}
 	}
 
-	public Rectangle2D getRect() {
+	public Rectangle getRect() {
 		return rect;
-	}
-
-	public Color getColor() {
-		return color;
-	}
-
-	public void winningCell() {
-		this.color = Color.YELLOW;
 	}
 
 	public CellPosition getPosition() {

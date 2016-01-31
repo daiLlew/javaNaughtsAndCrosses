@@ -1,11 +1,10 @@
 package dai.llew.game;
 
-import dai.llew.ui.Board;
+import dai.llew.ui.BoardDisplay;
 import dai.llew.ui.CellPosition;
 import dai.llew.ui.GUI;
-import dai.llew.ui.StartPanel;
+import dai.llew.ui.WelcomeDisplay;
 
-import java.awt.Point;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -36,7 +35,7 @@ public class GameManager {
 	private Player currentPlayer;
 	private Player humanPlayer;
 	private Player computerPlayer;
-	private Board board;
+	private BoardDisplay boardDisplay;
 	private AIModule aiModule;
 	private GameStatus gameStatus = START_MENU;
 	private List<CellPosition> winningCombination;
@@ -51,13 +50,13 @@ public class GameManager {
 		final Supplier<Player> getCurrentPlayer = () -> this.getCurrentPlayer();
 		final Runnable turnCompleted = () -> checkGameState();
 
-		this.board = new Board.Builder()
+		this.boardDisplay = new BoardDisplay.Builder()
 				.currentPlayerSupplier(getCurrentPlayer)
 				.turnCompleted(turnCompleted)
 				.build();
 
 		final Consumer<Symbol> symbolSelectedCallback = (symbol -> startGame(symbol));
-		StartPanel view = new StartPanel(symbolSelectedCallback);
+		WelcomeDisplay view = new WelcomeDisplay(symbolSelectedCallback);
 		this.gui = new GUI(view);
 	}
 
@@ -78,7 +77,7 @@ public class GameManager {
 			}
 
 			gameStatus = IN_PLAY;
-			gui.updateDisplay(board);
+			gui.updateDisplay(boardDisplay);
 			this.playGame();
 		} catch (InterruptedException ex) {
 			ex.printStackTrace();
@@ -125,7 +124,7 @@ public class GameManager {
 				try {
 					gui.getMainFrame().repaint();
 					if (currentPlayer.getPlayerType().equals(COMPUTER)) {
-						aiModule.takeTurn(board, computerPlayer, humanPlayer);
+						aiModule.takeTurn(boardDisplay, computerPlayer, humanPlayer);
 						checkGameState();
 					} else {
 						Thread.sleep(100);
@@ -135,8 +134,8 @@ public class GameManager {
 				}
 			}
 			if (gameStatus.equals(WON)) {
-				highlightWinningCells();
-				this.board.repaint();
+				strikeThroughWinningCells();
+				this.boardDisplay.repaint();
 				try {
 					Thread.sleep(5000);
 				} catch (InterruptedException e) {
@@ -155,11 +154,11 @@ public class GameManager {
 	 * <p>Else update the current player.</p>
 	 */
 	private void checkGameState() {
-		Optional<List<CellPosition>> winningCombination = aiModule.isWinner(board, currentPlayer);
+		Optional<List<CellPosition>> winningCombination = aiModule.isWinner(boardDisplay, currentPlayer);
 		if (winningCombination.isPresent()) {
 			this.gameStatus = WON;
 			this.winningCombination = winningCombination.get();
-		} else if (aiModule.isDraw(board)) {
+		} else if (aiModule.isDraw(boardDisplay)) {
 			this.gameStatus = DRAWN;
 		} else {
 			updatePlayer();
@@ -169,14 +168,8 @@ public class GameManager {
 	/**
 	 * Add a highlight to each of the winning {@link dai.llew.ui.BoardCell}'s to show the user game is won.
 	 */
-	private void highlightWinningCells() {
-		CellPosition start = winningCombination.get(0);
-		Point strikeStart = new Point(start.getX(), start.getY());
-
-		CellPosition end = winningCombination.get(2);
-		Point strikeEnd = new Point(end.getX(), end.getY());
-
-		board.setStrike(strikeStart, strikeEnd);
+	private void strikeThroughWinningCells() {
+		boardDisplay.setStrike(aiModule.getStrikeLine(winningCombination));
 	}
 
 	public static void main(String[] args) throws Exception {

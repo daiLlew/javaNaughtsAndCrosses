@@ -1,9 +1,11 @@
 package dai.llew.game;
 
-import dai.llew.ui.Board;
+import dai.llew.ui.BoardDisplay;
 import dai.llew.ui.BoardCell;
 import dai.llew.ui.CellPosition;
+import dai.llew.ui.StrikeLine;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,11 +25,16 @@ import static dai.llew.ui.CellPosition.TOP_MID;
 import static dai.llew.ui.CellPosition.TOP_RIGHT;
 
 /**
- * AIModule provides an intelligence t
+ * Provides the AI for the computers turn and other calculations required by the {@link GameManager}.
  */
 public class AIModule {
 
 	private List<List<CellPosition>> winningCombinations = null;
+	private List<List<CellPosition>> horizontals = null;
+	private List<List<CellPosition>> verticals = null;
+	private List<List<CellPosition>> diagonalTopLeft = null;
+	private List<List<CellPosition>> diagonalTopRight = null;
+
 
 	private static AIModule instance = null;
 
@@ -42,20 +49,30 @@ public class AIModule {
 	}
 
 	/**
-	 * Connstruct a new AIModule.
+	 * Construct a new AIModule.
 	 */
 	private AIModule() {
-		// All possible winning combinations
+		horizontals = new ArrayList<>();
+		horizontals.add(Arrays.asList(new CellPosition[]{TOP_LEFT, TOP_MID, TOP_RIGHT}));
+		horizontals.add(Arrays.asList(new CellPosition[]{MID_LEFT, MID_MID, MID_RIGHT}));
+		horizontals.add(Arrays.asList(new CellPosition[]{BOTTOM_LEFT, BOTTOM_MID, BOTTOM_RIGHT}));
+
+		verticals = new ArrayList<>();
+		verticals.add(Arrays.asList(new CellPosition[]{TOP_LEFT, MID_LEFT, BOTTOM_LEFT}));
+		verticals.add(Arrays.asList(new CellPosition[]{TOP_MID, MID_MID, BOTTOM_MID}));
+		verticals.add(Arrays.asList(new CellPosition[]{TOP_RIGHT, MID_RIGHT, BOTTOM_RIGHT}));
+
+		diagonalTopLeft = new ArrayList<>();
+		diagonalTopLeft.add(Arrays.asList(new CellPosition[]{TOP_LEFT, MID_MID, BOTTOM_RIGHT}));
+
+		diagonalTopRight = new ArrayList<>();
+		diagonalTopRight.add(Arrays.asList(new CellPosition[]{BOTTOM_LEFT, MID_MID, TOP_RIGHT}));
 
 		winningCombinations = new ArrayList<>();
-		winningCombinations.add(Arrays.asList(new CellPosition[]{TOP_LEFT, TOP_MID, TOP_RIGHT}));
-		winningCombinations.add(Arrays.asList(new CellPosition[]{MID_LEFT, MID_MID, MID_RIGHT}));
-		winningCombinations.add(Arrays.asList(new CellPosition[]{BOTTOM_LEFT, BOTTOM_MID, BOTTOM_RIGHT}));
-		winningCombinations.add(Arrays.asList(new CellPosition[]{TOP_LEFT, MID_LEFT, BOTTOM_LEFT}));
-		winningCombinations.add(Arrays.asList(new CellPosition[]{TOP_MID, MID_MID, BOTTOM_MID}));
-		winningCombinations.add(Arrays.asList(new CellPosition[]{TOP_RIGHT, MID_RIGHT, BOTTOM_RIGHT}));
-		winningCombinations.add(Arrays.asList(new CellPosition[]{TOP_LEFT, MID_MID, BOTTOM_RIGHT}));
-		winningCombinations.add(Arrays.asList(new CellPosition[]{TOP_RIGHT, MID_MID, BOTTOM_LEFT}));
+		winningCombinations.addAll(horizontals);
+		winningCombinations.addAll(verticals);
+		winningCombinations.addAll(diagonalTopLeft);
+		winningCombinations.addAll(diagonalTopRight);
 	}
 
 	/**
@@ -76,14 +93,14 @@ public class AIModule {
 	 * cell is chosen as either the <i>winning move</i> or a <i>win preventing</i> move. If the above does not exist
 	 * then no winning move exists at this time.
 	 *
-	 * @param board
+	 * @param boardDisplay
 	 * @param opponentSymbol
 	 * @return
 	 */
-	private Optional<CellPosition> findWinningMove(Board board, Symbol opponentSymbol) {
+	private Optional<CellPosition> findWinningMove(BoardDisplay boardDisplay, Symbol opponentSymbol) {
 		for (List<CellPosition> combination : winningCombinations) {
 
-			List<BoardCell> currentValues = getCurrentValues(board, combination);
+			List<BoardCell> currentValues = getCurrentValues(boardDisplay, combination);
 
 			long opponentOccupiedCount = currentValues.stream()
 					.filter(boardCell -> boardCell.isFilled() && opponentSymbol.equals(boardCell.getSymbol()))
@@ -104,10 +121,10 @@ public class AIModule {
 		return Optional.empty();
 	}
 
-	private List<BoardCell> getCurrentValues(Board board, List<CellPosition> positions) {
+	private List<BoardCell> getCurrentValues(BoardDisplay boardDisplay, List<CellPosition> positions) {
 		List<BoardCell> currentValues = new ArrayList<>();
 		positions.stream()
-				.forEach(cellPosition -> currentValues.add(board.getCell(cellPosition)));
+				.forEach(cellPosition -> currentValues.add(boardDisplay.getCell(cellPosition)));
 
 		return currentValues;
 	}
@@ -115,10 +132,10 @@ public class AIModule {
 	/**
 	 * Check if the player has 3 cells in a row.
 	 */
-	public Optional<List<CellPosition>> isWinner(Board board, Player player) {
+	public Optional<List<CellPosition>> isWinner(BoardDisplay boardDisplay, Player player) {
 		for (List<CellPosition> combination : winningCombinations) {
 			if (3 == combination.stream()
-					.filter(cellPosition -> player.getSymbol().equals(board.getCell(cellPosition).getSymbol()))
+					.filter(cellPosition -> player.getSymbol().equals(boardDisplay.getCell(cellPosition).getSymbol()))
 					.count()) {
 				return Optional.of(combination);
 			}
@@ -126,8 +143,8 @@ public class AIModule {
 		return Optional.empty();
 	}
 
-	public boolean isDraw(Board board) {
-		return board.getCells().values().stream().filter(boardCell -> !boardCell.isFilled()).count() == 0;
+	public boolean isDraw(BoardDisplay boardDisplay) {
+		return boardDisplay.getCells().values().stream().filter(boardCell -> !boardCell.isFilled()).count() == 0;
 	}
 
 	/**
@@ -139,23 +156,23 @@ public class AIModule {
 	 * next move.</p>
 	 * <p>Otherwise the computer will pick a free {@link BoardCell} at random.</p>
 	 *
-	 * @param board
+	 * @param boardDisplay
 	 * @param computerPlayer
 	 * @param opponent
 	 * @throws InterruptedException
 	 */
-	public void takeTurn(Board board, Player computerPlayer, Player opponent) throws InterruptedException {
+	public void takeTurn(BoardDisplay boardDisplay, Player computerPlayer, Player opponent) throws InterruptedException {
 		// Can the computer win with its next move?
-		Optional<CellPosition> nextMove = findWinningMove(board, computerPlayer.getSymbol());
+		Optional<CellPosition> nextMove = findWinningMove(boardDisplay, computerPlayer.getSymbol());
 
 		if (!nextMove.isPresent()) {
 			// Otherwise block the player if they can win with their next move.
-			nextMove = findWinningMove(board, opponent.getSymbol());
+			nextMove = findWinningMove(boardDisplay, opponent.getSymbol());
 		}
 
 		if (!nextMove.isPresent()) {
 			// Choose a random cell.
-			List<BoardCell> available = board.getCells().values()
+			List<BoardCell> available = boardDisplay.getCells().values()
 					.stream()
 					.filter(cell -> !cell.isFilled())
 					.collect(Collectors.toList());
@@ -164,6 +181,44 @@ public class AIModule {
 			nextMove = Optional.of(available.get(0).getPosition());
 		}
 		Thread.sleep(1000);
-		board.getCell(nextMove.get()).fill(computerPlayer.getSymbol());
+		boardDisplay.getCell(nextMove.get()).fill(computerPlayer.getSymbol());
+	}
+
+	/**
+	 * Calculate the correct start and end X Y coordinates of for the winners strike through line based on the
+	 * orientation of winning combination.
+	 *
+	 * @param winningCombo the combination of cells that won the game.
+	 * @return a {@link StrikeLine} containing the coordinate data required to draw the line.
+	 */
+	public StrikeLine getStrikeLine(List<CellPosition> winningCombo) {
+		int startX, startY, endX, endY;
+		CellPosition startCell = winningCombo.get(0);
+		CellPosition endCell = winningCombo.get(2);
+
+		if (horizontals.contains(winningCombo)) {
+			startX = startCell.getX();
+			startY = startCell.getY() + startCell.getHeight() / 2;
+
+			endX = endCell.getX() + endCell.getWidth();
+			endY = startCell.getY() + startCell.getHeight() / 2;
+		} else if (verticals.contains(winningCombo)) {
+			startX = startCell.getX() + startCell.getWidth() / 2;
+			startY = startCell.getY();
+
+			endX = endCell.getX() + endCell.getWidth() / 2;
+			endY = endCell.getY() + endCell.getHeight();
+		} else if (diagonalTopLeft.contains(winningCombo)){
+			startX = startCell.getX();
+			startY = startCell.getY();
+			endX = endCell.getX() + endCell.getWidth();
+			endY = endCell.getY() + endCell.getHeight();
+		} else {
+			startX = startCell.getX();
+			startY = startCell.getY() + startCell.getHeight();
+			endX = endCell.getX() + endCell.getWidth();
+			endY = endCell.getY();
+		}
+		return new StrikeLine(new Point(startX, startY), new Point(endX, endY));
 	}
 }
