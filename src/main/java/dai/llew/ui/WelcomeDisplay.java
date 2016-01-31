@@ -14,9 +14,6 @@ import java.awt.event.MouseMotionListener;
 import static dai.llew.game.GameConstants.GAME_DIMENSIONS;
 import static dai.llew.game.GameConstants.Symbol;
 
-/**
- * Created by daiLlew on 30/01/2016.
- */
 public class WelcomeDisplay extends GameDisplay {
 
 	private Rectangle noughtsArea;
@@ -85,11 +82,11 @@ public class WelcomeDisplay extends GameDisplay {
 
 		drawNought(g, CellPosition.MID_LEFT);
 		if (noughtsArea.contains(mousePoint)) {
-			highlightCell(g, noughtsArea);
+			highlightCell(g, CellPosition.MID_LEFT);
 		}
 		drawCross(g, CellPosition.MID_RIGHT);
 		if (crossesArea.contains(mousePoint)) {
-			highlightCell(g, crossesArea);
+			highlightCell(g, CellPosition.MID_RIGHT);
 		}
 	}
 }

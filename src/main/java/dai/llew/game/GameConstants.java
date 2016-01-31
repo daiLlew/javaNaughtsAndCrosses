@@ -42,16 +42,19 @@ public class GameConstants {
 	 * Thin Stroke.
 	 */
 	public static final BasicStroke THIN_STROKE = new BasicStroke(3);
-
+	/**
+	 * Color to use when highlighting an item.
+	 */
 	public static final Color HIGHLIGHT_COLOR = new Color(0/255.0f, 120/255.0f, 255/255.0f, 0.6f);
-
+	/**
+	 * The color for the O's & X's symbols.
+	 */
 	public static final Color SYMBOL_COLOR = Color.WHITE;
 
 	/**
 	 * Types to classify if the game is still in play or if it is completed.
 	 */
 	public enum GameStatus {
-
 		/**
 		 *
 		 */

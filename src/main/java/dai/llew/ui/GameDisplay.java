@@ -7,7 +7,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
 
 import static dai.llew.game.GameConstants.GAME_DIMENSIONS;
 import static dai.llew.game.GameConstants.HIGHLIGHT_COLOR;
@@ -56,10 +55,10 @@ public abstract class GameDisplay extends JPanel {
 		g.drawOval(topLeft.x, topLeft.y, SYMBOL_SIZE, SYMBOL_SIZE);
 	}
 
-	protected void highlightCell(Graphics2D g, Rectangle rectangle) {
+	protected void highlightCell(Graphics2D g, CellPosition pos) {
 		g.setPaint(HIGHLIGHT_COLOR);
 		g.setStroke(THIN_STROKE);
-		g.draw(rectangle);
+		g.draw(pos.getRect());
 	}
 
 	@Override

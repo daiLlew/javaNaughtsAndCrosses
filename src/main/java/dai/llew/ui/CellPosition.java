@@ -1,6 +1,7 @@
 package dai.llew.ui;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 
 /**
  * Created by daiLlew on 17/01/2016.
@@ -49,6 +50,10 @@ public enum CellPosition {
 
 	public int getHeight() {
 		return height;
+	}
+
+	public Rectangle getRect() {
+		return new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
 	}
 
 	/**

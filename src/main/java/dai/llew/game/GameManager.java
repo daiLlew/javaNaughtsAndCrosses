@@ -15,9 +15,9 @@ import static dai.llew.game.GameConstants.GameStatus.START_MENU;
 import static dai.llew.game.GameConstants.GameStatus.WON;
 import static dai.llew.game.GameConstants.PlayerType.COMPUTER;
 import static dai.llew.game.GameConstants.PlayerType.HUMAN;
+import static dai.llew.game.GameConstants.Symbol;
 import static dai.llew.game.GameConstants.Symbol.CROSSES;
 import static dai.llew.game.GameConstants.Symbol.NOUGHTS;
-import static dai.llew.game.GameConstants.Symbol;
 
 /**
  * Game manager is responsible:
@@ -27,7 +27,7 @@ import static dai.llew.game.GameConstants.Symbol;
  * <li>Checking if there is a winner.</li>
  * </ul>
  */
-public class GameManager {
+public class GameManager implements GameHelper {
 
 	private GUI gui;
 	private Player currentPlayer;
@@ -37,7 +37,6 @@ public class GameManager {
 	private AIModule aiModule;
 	private GameStatus gameStatus = START_MENU;
 	private List<CellPosition> winningCombination;
-	private GameHelper gameHelper;
 
 	/**
 	 * Create a new GameManager.
@@ -45,40 +44,12 @@ public class GameManager {
 	public GameManager() {
 		this.currentPlayer = humanPlayer;
 		this.aiModule = AIModule.getInstance();
-
-		this.gameHelper = new GameHelper() {
-			@Override
-			public Player getCurrentPlayer() {
-				return currentPlayer;
-			}
-
-			@Override
-			public Player humanPlayer() {
-				return humanPlayer;
-			}
-
-			@Override
-			public Player computerPlayer() {
-				return computerPlayer;
-			}
-
-			@Override
-			public void turnTaken() {
-				checkGameState();
-			}
-
-			@Override
-			public void symbolSelected(Symbol playerSymbol) {
-				startGame(playerSymbol);
-			}
-		};
-
-		boardDisplay = new BoardDisplay(gameHelper);
-		WelcomeDisplay view = new WelcomeDisplay(gameHelper);
+		boardDisplay = new BoardDisplay(this);
+		WelcomeDisplay view = new WelcomeDisplay(this);
 		this.gui = new GUI(view);
 	}
 
-	private void startGame(Symbol playerSymbol) {
+	public void symbolSelected(Symbol playerSymbol) {
 		try {
 			Thread.sleep(500);
 
@@ -109,16 +80,24 @@ public class GameManager {
 		return this.currentPlayer;
 	}
 
+	public Player getHumanPlayer() {
+		return humanPlayer;
+	}
+
+	public Player getComputerPlayer() {
+		return computerPlayer;
+	}
+
 	/**
 	 * Updates which {@link Player}'s turn it is.
 	 */
-	public void updatePlayer() {
+	private void updatePlayer() {
 		currentPlayer = currentPlayer.getPlayerType().equals(HUMAN) ? computerPlayer : humanPlayer;
 	}
 
 	public void play() {
 		execute(() -> {
-			while(gameStatus.equals(START_MENU)) {
+			while (gameStatus.equals(START_MENU)) {
 				gui.getMainFrame().repaint();
 				try {
 					Thread.sleep(100);
@@ -143,7 +122,7 @@ public class GameManager {
 					gui.getMainFrame().repaint();
 					if (currentPlayer.getPlayerType().equals(COMPUTER)) {
 						aiModule.takeTurn(boardDisplay, computerPlayer, humanPlayer);
-						checkGameState();
+						turnCompleted();
 					} else {
 						Thread.sleep(100);
 					}
@@ -171,7 +150,7 @@ public class GameManager {
 	 * to {@link GameStatus#DRAWN}.</p>
 	 * <p>Else update the current player.</p>
 	 */
-	private void checkGameState() {
+	public void turnCompleted() {
 		Optional<List<CellPosition>> winningCombination = aiModule.isWinner(boardDisplay, currentPlayer);
 		if (winningCombination.isPresent()) {
 			this.gameStatus = WON;

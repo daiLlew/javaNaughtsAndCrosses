@@ -45,7 +45,6 @@ public class BoardDisplay extends GameDisplay {
 	private MouseListener mouseListener;
 	private Point mousePoint = MouseInfo.getPointerInfo().getLocation();
 	private Optional<StrikeLine> strikeThrough = Optional.empty();
-
 	private GameHelper gameHelper;
 
 	/**
@@ -71,7 +70,6 @@ public class BoardDisplay extends GameDisplay {
 		this.mouseMotionListener = new MouseMotionListener() {
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				//updateMousePos(e.getPoint());
 				mousePoint = e.getPoint();
 			}
 
@@ -93,7 +91,7 @@ public class BoardDisplay extends GameDisplay {
 
 				if (mouseCell.isPresent()) {
 					mouseCell.get().fill(player.getSymbol());
-					gameHelper.turnTaken();
+					gameHelper.turnCompleted();
 				}
 			}
 
@@ -119,10 +117,6 @@ public class BoardDisplay extends GameDisplay {
 		addMouseListener(mouseListener);
 	}
 
-	public void updateMousePos(Point point) {
-		cells.values().stream().forEach(boardCell -> boardCell.updateColor(point, gameHelper.getCurrentPlayer()));
-	}
-
 	/**
 	 * Draw the boardDisplay in its current state.
 	 */
@@ -138,7 +132,7 @@ public class BoardDisplay extends GameDisplay {
 			g.setPaint(Color.BLACK);
 			g.fill(cell.getRect());
 			if (cell.getRect().contains(mousePoint) && !cell.isFilled()) {
-				highlightCell(g, cell.getRect());
+				highlightCell(g, cell.getPosition());
 			}
 			if (cell.isFilled()) {
 				drawSymbol(g, cell);
@@ -147,8 +141,8 @@ public class BoardDisplay extends GameDisplay {
 		if (strikeThrough.isPresent()) {
 			drawStrikeThrough(g);
 		}
-		String message = String.format("Player: %s\t\tComputer: %s", gameHelper.humanPlayer().getSymbol().name(),
-				gameHelper.computerPlayer().getSymbol().name());
+		String message = String.format("Player: %s\t\tComputer: %s", gameHelper.getHumanPlayer().getSymbol().name(),
+				gameHelper.getComputerPlayer().getSymbol().name());
 		writeMessage(g, message, 40);
 		revalidate();
 	}
