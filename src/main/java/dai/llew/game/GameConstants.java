@@ -73,7 +73,12 @@ public class GameConstants {
 		/**
 		 * Neither {@link Player} won the game.
 		 */
-		DRAWN;
+		DRAWN,
+
+		/**
+		 * Display Game completed screen.
+		 */
+		GAME_OVER;
 	}
 
 	/**
@@ -95,7 +100,7 @@ public class GameConstants {
 		/**
 		 * The Noughts Symbol.
 		 */
-		NOUGHTS("O"),
+		NOUGHTS("0"),
 
 		/**
 		 * The Crosses Symbol.

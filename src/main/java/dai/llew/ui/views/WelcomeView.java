@@ -9,12 +9,8 @@ import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 
-import static dai.llew.game.GameConstants.GAME_DIMENSIONS;
 import static dai.llew.game.GameConstants.Symbol;
-import static dai.llew.game.GameConstants.WINDOW_WIDTH;
 
 public class WelcomeView extends GameView {
 
@@ -26,7 +22,7 @@ public class WelcomeView extends GameView {
 	private GameHelper gameHelper;
 
 	public WelcomeView(GameHelper helper) {
-		super();
+		super(helper);
 		this.gameHelper = helper;
 
 		CellPosition pos = CellPosition.MID_LEFT;
@@ -57,14 +53,10 @@ public class WelcomeView extends GameView {
 
 	@Override
 	protected void handleMouseClicked(MouseEvent e) {
-		try {
-			if (noughtsArea.contains(e.getPoint())) {
-				gameHelper.symbolSelected(Symbol.NOUGHTS);
-			} else if (crossesArea.contains(e.getPoint())) {
-				gameHelper.symbolSelected(Symbol.CROSSES);
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		if (noughtsArea.contains(e.getPoint())) {
+			gameHelper.symbolSelected(Symbol.NOUGHTS);
+		} else if (crossesArea.contains(e.getPoint())) {
+			gameHelper.symbolSelected(Symbol.CROSSES);
 		}
 	}
 }

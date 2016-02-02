@@ -1,5 +1,6 @@
 package dai.llew.ui.views;
 
+import dai.llew.game.GameHelper;
 import dai.llew.ui.CellPosition;
 
 import javax.swing.*;
@@ -30,9 +31,11 @@ public abstract class GameView extends JPanel {
 
 	protected Font font = new Font("Courier New", Font.BOLD, 24);
 	protected Rectangle background = new Rectangle(GAME_DIMENSIONS);
+	protected GameHelper gameHelper;
 
-	public GameView() {
+	public GameView(GameHelper gameHelper) {
 		super();
+		this.gameHelper = gameHelper;
 		setSize(GAME_DIMENSIONS);
 		setVisible(true);
 
@@ -120,12 +123,6 @@ public abstract class GameView extends JPanel {
 		g.setStroke(THIN_STROKE);
 		g.draw(pos.getRect());
 	}
-
-/*	protected void writeMessage(Graphics2D g, String message, int x, int y, Color color) {
-		g.setPaint(color);
-		g.setFont(font);
-		g.drawString(message, x, y);
-	}*/
 
 	protected void writeMessage(Graphics2D g, String message, CellPosition position, Color color) {
 		g.setPaint(color);

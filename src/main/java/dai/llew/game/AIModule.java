@@ -1,9 +1,9 @@
 package dai.llew.game;
 
-import dai.llew.ui.views.BoardView;
 import dai.llew.ui.BoardCell;
 import dai.llew.ui.CellPosition;
 import dai.llew.ui.StrikeLine;
+import dai.llew.ui.views.BoardView;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -34,7 +34,6 @@ public class AIModule {
 	private List<List<CellPosition>> verticals = null;
 	private List<List<CellPosition>> diagonalTopLeft = null;
 	private List<List<CellPosition>> diagonalTopRight = null;
-
 
 	private static AIModule instance = null;
 
@@ -208,7 +207,7 @@ public class AIModule {
 
 			endX = endCell.getX() + endCell.getWidth() / 2;
 			endY = endCell.getY() + endCell.getHeight();
-		} else if (diagonalTopLeft.contains(winningCombo)){
+		} else if (diagonalTopLeft.contains(winningCombo)) {
 			startX = startCell.getX();
 			startY = startCell.getY();
 			endX = endCell.getX() + endCell.getWidth();

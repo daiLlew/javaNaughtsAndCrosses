@@ -49,15 +49,13 @@ public class BoardView extends GameView {
 	private Map<CellPosition, BoardCell> cells;
 	private Point mousePoint = MouseInfo.getPointerInfo().getLocation();
 	private Optional<StrikeLine> strikeThrough = Optional.empty();
-	private GameHelper gameHelper;
 
 	/**
 	 * Construct the game BoardView.
 	 */
 	public BoardView(GameHelper helper) {
-		super();
+		super(helper);
 
-		this.gameHelper = helper;
 		this.background = new Rectangle(BOARD_COORD, BOARD_COORD, BOARD_DIMENSIONS.width, BOARD_DIMENSIONS.height);
 
 		this.cells = new HashMap<>();
