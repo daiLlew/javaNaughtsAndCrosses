@@ -5,7 +5,7 @@ Now in a playable state, improvements and update to follow. But if you can't wai
 play the game:
 
 (1) $ maven clean package
-(2) $ java -jar target/tic-tac-toe-<VERSION>-SNAPSHOT.jar
+(2) $ java -jar target/tic-tac-toe-$_VERSION-SNAPSHOT.jar
   
 
 
