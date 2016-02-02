@@ -1,6 +1,6 @@
 package dai.llew.game;
 
-import dai.llew.ui.BoardDisplay;
+import dai.llew.ui.views.BoardView;
 import dai.llew.ui.BoardCell;
 import dai.llew.ui.CellPosition;
 import dai.llew.ui.StrikeLine;
@@ -93,14 +93,14 @@ public class AIModule {
 	 * cell is chosen as either the <i>winning move</i> or a <i>win preventing</i> move. If the above does not exist
 	 * then no winning move exists at this time.
 	 *
-	 * @param boardDisplay
+	 * @param boardView
 	 * @param opponentSymbol
 	 * @return
 	 */
-	private Optional<CellPosition> findWinningMove(BoardDisplay boardDisplay, Symbol opponentSymbol) {
+	private Optional<CellPosition> findWinningMove(BoardView boardView, Symbol opponentSymbol) {
 		for (List<CellPosition> combination : winningCombinations) {
 
-			List<BoardCell> currentValues = getCurrentValues(boardDisplay, combination);
+			List<BoardCell> currentValues = getCurrentValues(boardView, combination);
 
 			long opponentOccupiedCount = currentValues.stream()
 					.filter(boardCell -> boardCell.isFilled() && opponentSymbol.equals(boardCell.getSymbol()))
@@ -121,10 +121,10 @@ public class AIModule {
 		return Optional.empty();
 	}
 
-	private List<BoardCell> getCurrentValues(BoardDisplay boardDisplay, List<CellPosition> positions) {
+	private List<BoardCell> getCurrentValues(BoardView boardView, List<CellPosition> positions) {
 		List<BoardCell> currentValues = new ArrayList<>();
 		positions.stream()
-				.forEach(cellPosition -> currentValues.add(boardDisplay.getCell(cellPosition)));
+				.forEach(cellPosition -> currentValues.add(boardView.getCell(cellPosition)));
 
 		return currentValues;
 	}
@@ -132,10 +132,10 @@ public class AIModule {
 	/**
 	 * Check if the player has 3 cells in a row.
 	 */
-	public Optional<List<CellPosition>> isWinner(BoardDisplay boardDisplay, Player player) {
+	public Optional<List<CellPosition>> isWinner(BoardView boardView, Player player) {
 		for (List<CellPosition> combination : winningCombinations) {
 			if (3 == combination.stream()
-					.filter(cellPosition -> player.getSymbol().equals(boardDisplay.getCell(cellPosition).getSymbol()))
+					.filter(cellPosition -> player.getSymbol().equals(boardView.getCell(cellPosition).getSymbol()))
 					.count()) {
 				return Optional.of(combination);
 			}
@@ -143,8 +143,8 @@ public class AIModule {
 		return Optional.empty();
 	}
 
-	public boolean isDraw(BoardDisplay boardDisplay) {
-		return boardDisplay.getCells().values().stream().filter(boardCell -> !boardCell.isFilled()).count() == 0;
+	public boolean isDraw(BoardView boardView) {
+		return boardView.getCells().values().stream().filter(boardCell -> !boardCell.isFilled()).count() == 0;
 	}
 
 	/**
@@ -156,23 +156,23 @@ public class AIModule {
 	 * next move.</p>
 	 * <p>Otherwise the computer will pick a free {@link BoardCell} at random.</p>
 	 *
-	 * @param boardDisplay
+	 * @param boardView
 	 * @param computerPlayer
 	 * @param opponent
 	 * @throws InterruptedException
 	 */
-	public void takeTurn(BoardDisplay boardDisplay, Player computerPlayer, Player opponent) throws InterruptedException {
+	public void takeTurn(BoardView boardView, Player computerPlayer, Player opponent) throws InterruptedException {
 		// Can the computer win with its next move?
-		Optional<CellPosition> nextMove = findWinningMove(boardDisplay, computerPlayer.getSymbol());
+		Optional<CellPosition> nextMove = findWinningMove(boardView, computerPlayer.getSymbol());
 
 		if (!nextMove.isPresent()) {
 			// Otherwise block the player if they can win with their next move.
-			nextMove = findWinningMove(boardDisplay, opponent.getSymbol());
+			nextMove = findWinningMove(boardView, opponent.getSymbol());
 		}
 
 		if (!nextMove.isPresent()) {
 			// Choose a random cell.
-			List<BoardCell> available = boardDisplay.getCells().values()
+			List<BoardCell> available = boardView.getCells().values()
 					.stream()
 					.filter(cell -> !cell.isFilled())
 					.collect(Collectors.toList());
@@ -181,7 +181,7 @@ public class AIModule {
 			nextMove = Optional.of(available.get(0).getPosition());
 		}
 		Thread.sleep(1000);
-		boardDisplay.getCell(nextMove.get()).fill(computerPlayer.getSymbol());
+		boardView.getCell(nextMove.get()).fill(computerPlayer.getSymbol());
 	}
 
 	/**

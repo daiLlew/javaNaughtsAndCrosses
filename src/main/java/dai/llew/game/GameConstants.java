@@ -95,11 +95,21 @@ public class GameConstants {
 		/**
 		 * The Noughts Symbol.
 		 */
-		NOUGHTS,
+		NOUGHTS("O"),
 
 		/**
 		 * The Crosses Symbol.
 		 */
-		CROSSES;
+		CROSSES("X");
+
+		private final String value;
+
+		Symbol(String value) {
+			this.value = value;
+		}
+
+		public String get() {
+			return this.value;
+		}
 	}
 }

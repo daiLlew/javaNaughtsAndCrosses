@@ -1,6 +1,7 @@
-package dai.llew.ui;
+package dai.llew.ui.views;
 
 import dai.llew.game.GameHelper;
+import dai.llew.ui.CellPosition;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -13,17 +14,19 @@ import java.awt.event.MouseMotionListener;
 
 import static dai.llew.game.GameConstants.GAME_DIMENSIONS;
 import static dai.llew.game.GameConstants.Symbol;
+import static dai.llew.game.GameConstants.WINDOW_WIDTH;
 
-public class WelcomeDisplay extends GameDisplay {
+public class WelcomeView extends GameView {
+
+	private static final String MSG_1 = "Please select your symbol";
 
 	private Rectangle noughtsArea;
 	private Rectangle crossesArea;
 	private Point mousePoint = MouseInfo.getPointerInfo().getLocation();
 	private GameHelper gameHelper;
 
-	public WelcomeDisplay(GameHelper helper) {
+	public WelcomeView(GameHelper helper) {
 		super();
-
 		this.gameHelper = helper;
 
 		CellPosition pos = CellPosition.MID_LEFT;
@@ -31,54 +34,11 @@ public class WelcomeDisplay extends GameDisplay {
 
 		pos = CellPosition.MID_RIGHT;
 		crossesArea = new Rectangle(pos.getX(), pos.getY(), pos.getWidth(), pos.getHeight());
-
-		addMouseMotionListener(new MouseMotionListener() {
-			@Override
-			public void mouseDragged(MouseEvent e) {
-			}
-
-			@Override
-			public void mouseMoved(MouseEvent e) {
-				mousePoint = e.getPoint();
-			}
-		});
-
-		addMouseListener(new MouseListener() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (noughtsArea.contains(e.getPoint())) {
-					gameHelper.symbolSelected(Symbol.NOUGHTS);
-				} else if (crossesArea.contains(e.getPoint())) {
-					gameHelper.symbolSelected(Symbol.CROSSES);
-				}
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-			}
-		});
 	}
 
 	@Override
 	public void updateDisplay(Graphics2D g) {
-		Rectangle background = new Rectangle(GAME_DIMENSIONS);
-		g.setPaint(Color.BLACK);
-		g.fill(background);
-
-		writeMessage(g, "Welcome to Noughts and Crosses", 60);
-		writeMessage(g, "Select your symbol", 120);
+		writeCentered(g, MSG_1, 100, Color.WHITE);
 
 		drawNought(g, CellPosition.MID_LEFT);
 		if (noughtsArea.contains(mousePoint)) {
@@ -87,6 +47,24 @@ public class WelcomeDisplay extends GameDisplay {
 		drawCross(g, CellPosition.MID_RIGHT);
 		if (crossesArea.contains(mousePoint)) {
 			highlightCell(g, CellPosition.MID_RIGHT);
+		}
+	}
+
+	@Override
+	protected void handleMouseMoved(MouseEvent e) {
+		mousePoint = e.getPoint();
+	}
+
+	@Override
+	protected void handleMouseClicked(MouseEvent e) {
+		try {
+			if (noughtsArea.contains(e.getPoint())) {
+				gameHelper.symbolSelected(Symbol.NOUGHTS);
+			} else if (crossesArea.contains(e.getPoint())) {
+				gameHelper.symbolSelected(Symbol.CROSSES);
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 	}
 }

@@ -2,7 +2,6 @@ package dai.llew.ui;
 
 import dai.llew.game.GameConstants.Symbol;
 
-import java.awt.Color;
 import java.awt.Rectangle;
 
 public class BoardCell {

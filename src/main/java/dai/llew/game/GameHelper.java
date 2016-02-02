@@ -10,5 +10,5 @@ public interface GameHelper {
 
 	void turnCompleted();
 
-	void symbolSelected(GameConstants.Symbol symbol);
+	void symbolSelected(GameConstants.Symbol symbol) throws Exception;
 }
