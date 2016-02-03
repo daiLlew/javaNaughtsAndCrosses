@@ -4,8 +4,10 @@ I fancied a challenge so I thought I would have a go at writing a simple Noughts
 Now in a playable state, improvements and update to follow. But if you can't wait run the following commands (in order) to
 play the game:
 
-(1) $ maven clean package
-(2) $ java -jar target/tic-tac-toe-$_VERSION-SNAPSHOT.jar
+```
+$ maven clean package
+$ java -jar target/tic-tac-toe-1.0-SNAPSHOT.jar
+```
   
 
 
