@@ -1,13 +1,9 @@
-# javaNaughtsAndCrosses
-I fancied a challenge so I thought I would have a go at writing a simple Noughts and Crosses (Tic-tac-toe if you are American) game.
+# Java Naughts & Crosses Game.
+A simple Noughts & Crosses (Tic-tac-toe) game written in Java. Currently 1 player agaist the "AI".
 
-Now in a playable state, improvements and update to follow. But if you can't wait run the following commands (in order) to
-play the game:
-
-```
-$ maven clean package
-$ java -jar target/tic-tac-toe-1.0-SNAPSHOT.jar
-```
+### Getting started
+- Clone the repo.
+- From the project root run `make game` to build and start the game.
   
 
 
